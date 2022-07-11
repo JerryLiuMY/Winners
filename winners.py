@@ -48,7 +48,9 @@ class RD(object):
         self.Y = Y
         self.Z = Z
         self.b = b
-        self.arms = set(Z)
+        self.narms = len(set(Z))
+        if set(Z) != set(np.arange(self.narms)):
+            raise ValueError("Wrong Z.")
         
     def sampel_splitting(self, Y, Z, row_idx1):
         idx = np.arange(self.n)
@@ -77,16 +79,17 @@ class RD(object):
     
     def get_residual(self):
         mu = np.zeros(self.n)
-        for i in list(set(self.Z)):
-            mu[self.Z==i] = np.mean(self.Y[self.Z==i])
-        return self.Y-mu, np.array(list(set(mu)))
+        mu_params = np.zeros(self.narms)
+        for i in range(self.narms):
+            mu_params[i] = np.mean(self.Y[self.Z==i])
+            mu[self.Z==i] = mu_params[i]
+        return self.Y-mu, mu_params
     
     def multiple_test(self, ntests, ntrans):
         idx = np.arange(self.n)
         row_idx1s = [np.random.choice(idx, self.b, replace=False) for i in range(ntests)]
         pvals = np.zeros(ntrans)
         eps, mu = self.get_residual()
-        #mu = np.arange(5)-4
         # get p_obs
         p_obs = np.mean([self.sampel_splitting(self.Y, self.Z, ridx)[-1] for ridx in row_idx1s])
         for i in range(ntrans):
