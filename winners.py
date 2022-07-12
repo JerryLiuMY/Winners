@@ -43,12 +43,13 @@ class DGP(object):
     
 class RD(object):
     
-    def __init__(self, Y, Z, b):
+    def __init__(self, Y, Z, b, null=0):
         self.n = len(Y)
         self.Y = Y
         self.Z = Z
         self.b = b
         self.narms = len(set(Z))
+        self.null = null
         if set(Z) != set(np.arange(self.narms)):
             raise ValueError("Wrong Z.")
         
@@ -82,6 +83,7 @@ class RD(object):
         for i in range(self.narms):
             mu_params[i] = np.mean(self.Y[self.Z==i])
             #mu_params[i] = (np.arange(5)-4)[i]
+        mu_params[-1] = self.null
         mu = mu_params[self.Z]
         return self.Y-mu, mu_params
     
