@@ -69,7 +69,7 @@ class RD(object):
     def get_best_arm(self, Y, Z):
         arms = list(set(Z))
         best_arm = arms[0]
-        best_mean = 0
+        best_mean = -np.inf
         for i in arms:
             mean = np.mean(Y[Z==i])
             if mean > best_mean:
@@ -78,11 +78,11 @@ class RD(object):
         return best_arm
     
     def get_residual(self):
-        mu = np.zeros(self.n)
         mu_params = np.zeros(self.narms)
         for i in range(self.narms):
             mu_params[i] = np.mean(self.Y[self.Z==i])
-            mu[self.Z==i] = mu_params[i]
+            #mu_params[i] = (np.arange(5)-4)[i]
+        mu = mu_params[self.Z]
         return self.Y-mu, mu_params
     
     def multiple_test(self, ntests, ntrans):
@@ -97,8 +97,7 @@ class RD(object):
             Z = self.Z.copy()
             np.random.shuffle(Z)
             # residual randomization
-            g = np.array([-1]*int(self.n/2) + [1]*int(self.n/2))
-            np.random.shuffle(g)
+            g = np.random.choice([0,1],size=len(Z))
             Y = mu[Z] + g*eps
             ps = [self.sampel_splitting(Y, Z, ridx)[-1] for ridx in row_idx1s]
             p = np.mean(ps)
