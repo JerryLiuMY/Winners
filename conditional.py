@@ -11,7 +11,7 @@ class Conditional:
         self.narms = len(self.T)
         self.estimate = self.get_estimate()
         self.best_arm = self.get_estimate()
-        self.Y, self.Z = self.get_YZ()
+        self.Y, self.Z = self.get_Y()
 
     def get_estimate(self):
         """ get a list of estimated means """
@@ -27,7 +27,7 @@ class Conditional:
 
         return best_arm
 
-    def get_YZ(self):
+    def get_Y(self):
         """ get Y and Z """
 
         # find Y and Z
@@ -40,7 +40,7 @@ class Conditional:
 
     def get_interval(self):
         """ Get interval for truncated normal distribution """
-        
+
         # L_list: get list for lower bound
         L_list = []
         for arm in range(narms):
