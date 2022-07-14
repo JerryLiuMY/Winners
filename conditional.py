@@ -49,10 +49,7 @@ class Conditional:
                 den = covs[self.best_arm, self.best_arm] - covs[self.best_arm, arm]
                 L_list.append(num / den)
 
-        if len(L_list) == 0:
-            L = -np.inf
-        else:
-            L = max(L_list)
+        L = -np.inf if len(L_list) == 0 else max(L_list)
 
         # U_list: get list for upper bound
         U_list = []
@@ -62,10 +59,7 @@ class Conditional:
                 den = covs[self.best_arm, self.best_arm] - covs[self.best_arm, arm]
                 U_list.append(num / den)
 
-        if len(U_list) == 0:
-            U = np.inf
-        else:
-            U = min(U_list)
+        U = np.inf if len(U_list) == 0 else min(U_list)
 
         # V_list: get list for condition
         V_list = []
@@ -74,10 +68,7 @@ class Conditional:
                 V_list.append(-(self.Z[arm] - self.Z[self.best_arm]))
 
         # Y: get the interval for truncated mean
-        if min(V_list) >= 0:
-            Y = [L, U]
-        else:
-            Y = None
+        Y = [L, U] if min(V_list) >= 0 else None
 
         return Y
 
