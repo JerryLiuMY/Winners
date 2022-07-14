@@ -83,7 +83,7 @@ class RD(object):
         for i in range(self.narms):
             mu_params[i] = np.mean(self.Y[self.Z==i])
             #mu_params[i] = (np.arange(5)-4)[i]
-        mu_params[-1] = self.null
+        mu_params[np.argmax(mu_params)] = self.null
         mu = mu_params[self.Z]
         return self.Y-mu, mu_params
     
