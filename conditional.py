@@ -14,7 +14,7 @@ class Conditional:
         # define related variables
         self.narms = len(self.T)
         self.estimate = self.get_estimate()
-        self.best_arm = self.get_estimate()
+        self.best_arm = self.get_best_arm()
         self.Y, self.Z = self.get_YZ()
 
     def get_estimate(self):
