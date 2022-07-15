@@ -1,5 +1,6 @@
 import numpy as np
 from winners import DGP
+from scipy.stats import truncnorm
 
 
 class Conditional:
@@ -12,7 +13,7 @@ class Conditional:
         self.T = T
 
         # define related variables
-        self.narms = len(self.T)
+        self.narms = len(np.unique(self.T))
         self.estimate = self.get_estimate()
         self.best_arm = self.get_best_arm()
         self.Y, self.Z = self.get_YZ()
@@ -42,7 +43,7 @@ class Conditional:
 
         return Y, Z
 
-    def get_interval(self):
+    def get_truncation(self):
         """ Get interval for truncated normal distribution """
 
         # L_list: get list for lower bound
@@ -73,9 +74,17 @@ class Conditional:
         #         V_list.append(-(self.Z[arm] - self.Z[self.best_arm]))
 
         # Y: get the interval for truncated mean
-        Y = [L, U]
 
-        return Y
+        truncation = [L, U]
+
+        return truncation
+
+    def get_confidence(self):
+        [L, U] = self.get_truncation()
+        lower = self.Z[self.best_arm] - truncnorm.ppf(0.975, L, U, loc=0, scale=self.covs[self.best_arm, self.best_arm])
+        upper = self.Z[self.best_arm] + truncnorm.ppf(0.975, L, U, loc=0, scale=self.covs[self.best_arm, self.best_arm])
+
+        return [lower, upper]
 
 
 if __name__ == "__main__":
@@ -83,7 +92,7 @@ if __name__ == "__main__":
     np.random.seed(0)
     nsamples = 1000
     narms = 20
-    means = np.random.normal(10, 1, size=narms)
+    means = [10] + [5] * (narms - 1)
     vars = np.ones(narms)
     covs = np.diag(vars)
 
@@ -93,3 +102,4 @@ if __name__ == "__main__":
 
     # define conditional data
     conditional = Conditional(means, covs, X, T)
+    [lower, upper] = conditional.get_confidence()
