@@ -4,14 +4,18 @@ from winners import DGP
 
 class Conditional:
     def __init__(self, means, covs, X, T):
+
+        # define main variables
         self.means = means
         self.covs = covs
         self.X = X
         self.T = T
+
+        # define related variables
         self.narms = len(self.T)
         self.estimate = self.get_estimate()
         self.best_arm = self.get_estimate()
-        self.Y, self.Z = self.get_Y()
+        self.Y, self.Z = self.get_YZ()
 
     def get_estimate(self):
         """ get a list of estimated means """
@@ -27,7 +31,7 @@ class Conditional:
 
         return best_arm
 
-    def get_Y(self):
+    def get_YZ(self):
         """ get Y and Z """
 
         # find Y and Z
@@ -61,25 +65,31 @@ class Conditional:
 
         U = np.inf if len(U_list) == 0 else min(U_list)
 
-        # V_list: get list for condition
-        V_list = []
-        for arm in range(narms):
-            if covs[self.best_arm, self.best_arm] == covs[self.best_arm, arm]:
-                V_list.append(-(self.Z[arm] - self.Z[self.best_arm]))
+        # # V_list: get list for condition
+        # # this constraint can be safely ignore
+        # V_list = []
+        # for arm in range(narms):
+        #     if covs[self.best_arm, self.best_arm] == covs[self.best_arm, arm]:
+        #         V_list.append(-(self.Z[arm] - self.Z[self.best_arm]))
 
         # Y: get the interval for truncated mean
-        Y = [L, U] if min(V_list) >= 0 else None
+        Y = [L, U]
 
         return Y
 
 
 if __name__ == "__main__":
+    # define variables
     np.random.seed(0)
     nsamples = 1000
     narms = 20
     means = np.random.normal(10, 1, size=narms)
     vars = np.ones(narms)
     covs = np.diag(vars)
+
+    # define data generating process
     dpg = DGP(nsamples, narms, means, vars)
     X, T = dpg.get_data()
+
+    # define conditional data
     conditional = Conditional(means, covs, X, T)
