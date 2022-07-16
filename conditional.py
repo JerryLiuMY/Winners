@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import truncnorm
+from functools import partial
 
 X = [0.813267813267813, 0.612068965517241, 0.713670613562971, 0.922330097087379, 0.81270182992465,
      0.980603448275862, 0.891891891891892, 0.780409041980624, 1.51619870410367, 0.786637931034482,
@@ -25,7 +26,6 @@ NDRAWS = 10000
 ALPHA = 0.05
 BETA = 0.005
 
-
 # DRAW FROM THE STANDARD NORMAL DISTRIBUTION WITH FIXED SEED.
 # REPLICATE THE VECTOR OF ESTIMATES.
 # REPLICATE THE VARIANCE MATRIX.
@@ -39,7 +39,8 @@ SIGMA = np.kron(np.array([[1, 1], [1, 1]]), SIGMA)
 def ETRN2(MU, A, B, SIGMA, N, SEED=100):
     np.random.seed(SEED)
     TAIL_PROB = SIGMA * np.mean(
-        truncnorm.ppf(q=np.random.uniform(N), a=[(A - MU) / SIGMA] * N, b=[(B - MU) / SIGMA] * N + MU))
+        truncnorm.ppf(q=np.random.uniform(N), a=[(A - MU) / SIGMA] * N, b=np.array([(B - MU) / SIGMA] * N) + MU)
+    )
 
     return TAIL_PROB
 
@@ -50,8 +51,9 @@ def ETRN2(MU, A, B, SIGMA, N, SEED=100):
 def PTRN2(MU, Q, A, B, SIGMA, N, SEED=100):
     np.random.seed(SEED)
     TAIL_PROB = np.mean(
-        truncnorm.ppf(q=np.random.uniform(N), a=[(A - MU) / SIGMA] * N, b=[(B - MU) / SIGMA] * N + MU) <= (
-                (Q - MU) / SIGMA))
+        truncnorm.ppf(q=np.random.uniform(N), a=[(A - MU) / SIGMA] * N, b=np.array([(B - MU) / SIGMA] * N) + MU) <=
+        ((Q - MU) / SIGMA)
+    )
 
     return TAIL_PROB
 
@@ -105,10 +107,65 @@ if sum(IND_U) > 0:
     UTILDE = min(SIGMAYTILDE * (ZTILDE[IND_U] - ZTILDE[THETA_TILDE]) /
                  (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_U]))
 
+# THE V TRUNCATION VALUE.
 IND_V = (SIGMAXYTILDE_VEC == SIGMAXYTILDE)
 if sum(IND_V) == 0:
     VTILDE = 0
 if sum(IND_V) > 0:
     VTILDE = min(-(ZTILDE[IND_V] - ZTILDE[THETA_TILDE]))
 
+YHAT = YTILDE
+SIGMAYHAT = SIGMAYTILDE
+L = LTILDE
+U = UTILDE
+SIZE = 0.5
+NMC = NDRAWS
 
+CHECK_UNIROOT = False
+k = K
+TOL = 1e-6
+
+while CHECK_UNIROOT is False:
+    SCALE = k
+    MUGRIDSL = YHAT - SCALE * np.sqrt(SIGMAYHAT)
+    MUGRIDSU = YHAT + SCALE * np.sqrt(SIGMAYHAT)
+    MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSU)]
+    PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
+    INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
+    HALT_CONDITION = abs(max(np.sign(INTERMEDIATE)) - min(np.sign(INTERMEDIATE))) > TOL
+    if HALT_CONDITION is True:
+        CHECK_UNIROOT = True
+    if HALT_CONDITION is False:
+        k = 2 * k
+
+# INITIALISE LOOP.
+HALT_CONDITION = False
+MUGRIDS = [0] * 3
+
+# SIMPLE BISECTION SEARCH ALGORITHM.
+while HALT_CONDITION is False:
+    MUGRIDSM = (MUGRIDSL + MUGRIDSU) / 2
+    PREVIOUS_LINE = MUGRIDS
+    MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSM), np.float(MUGRIDSU)]
+    PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
+    INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
+
+    if max(abs(MUGRIDS - PREVIOUS_LINE)) == 0:
+        HALT_CONDITION = True
+
+    if (abs(INTERMEDIATE[1]) < TOL) or (abs(MUGRIDSU - MUGRIDSL) < TOL):
+        HALT_CONDITION = True
+
+    if np.sign(INTERMEDIATE[0]) == np.sign(INTERMEDIATE[1]):
+        MUGRIDSL = MUGRIDSM
+
+    if np.sign(INTERMEDIATE[2]) == np.sign(INTERMEDIATE[1]):
+        MUGRIDSU = MUGRIDSM
+
+    PYHAT = MUGRIDSM
+
+MED_U_ESTIMATE = PYHAT
+
+# RESTORE GLOBAL ENVIRONMENT TO ORIGINAL STATE.
+del YHAT, SIGMAYHAT, L, U, SIZE, NMC, CHECK_UNIROOT, k, SCALE, MUGRIDSL, MUGRIDSU, MUGRIDS
+del INTERMEDIATE, HALT_CONDITION, MUGRIDSM, PREVIOUS_LINE, PYHAT
