@@ -53,7 +53,7 @@ class RD(object):
         if set(Z) != set(np.arange(self.narms)):
             raise ValueError("Wrong Z.")
         
-    def sampel_splitting(self, Y, Z, row_idx1):
+    def sample_splitting(self, Y, Z, row_idx1):
         idx = np.arange(self.n)
         #row_idx1 = np.random.choice(idx, self.b, replace=False)
         row_idx2 = np.array(list(set(idx) - set(row_idx1)))
@@ -87,13 +87,18 @@ class RD(object):
         mu = mu_params[self.Z]
         return self.Y-mu, mu_params
     
+    def single_test(self):
+        idx = np.arange(self.n)
+        row_idx1 = np.random.choice(idx, self.b, replace=False)
+        return self.sample_splitting(self.Y, self.Z, row_idx1)[-1]
+    
     def multiple_test(self, ntests, ntrans):
         idx = np.arange(self.n)
         row_idx1s = [np.random.choice(idx, self.b, replace=False) for i in range(ntests)]
         pvals = np.zeros(ntrans)
         eps, mu = self.get_residual()
         # get p_obs
-        p_obs = np.mean([self.sampel_splitting(self.Y, self.Z, ridx)[-1] for ridx in row_idx1s])
+        p_obs = np.mean([self.sample_splitting(self.Y, self.Z, ridx)[-1] for ridx in row_idx1s])
         for i in range(ntrans):
             # permute Z
             Z = self.Z.copy()
@@ -101,7 +106,7 @@ class RD(object):
             # residual randomization
             g = np.random.choice([0,1],size=len(Z))
             Y = mu[Z] + g*eps
-            ps = [self.sampel_splitting(Y, Z, ridx)[-1] for ridx in row_idx1s]
+            ps = [self.sample_splitting(Y, Z, ridx)[-1] for ridx in row_idx1s]
             p = np.mean(ps)
             pvals[i] = p
         pvalue = np.mean(pvals < p_obs)
