@@ -1,0 +1,62 @@
+\documentclass[11pt, oneside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath} % math tool
+\usepackage{amssymb} % math symbol
+\usepackage{graphicx} % graphics
+\usepackage{hyperref} % internal reference
+\usepackage{parskip} % remote indentation
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\renewcommand{\labelitemi}{$\blacktriangleright$}
+
+\title{\textbf{Inference on Winners}}
+\author{\vspace{-5ex}}
+\date{\vspace{-5ex}}
+
+\begin{document}
+\begin{algorithm}
+\caption{Conditional Inference: construct quantile-unbiased estimators for $\mu_{Y}(\hat{\theta})$}
+\begin{algorithmic}
+\REQUIRE $X=\left(X\left(\theta_{1}\right), \ldots, X\left(\theta_{|\Theta|}\right)\right)^{\prime}$ where $X \sim N(\mu, \Sigma)$ and $\Theta=\left\{\theta_{1}, \ldots, \theta_{|\Theta|}\right\}$ is a finite set, covariance matrix $\Sigma$, significance level $\alpha$, number of draws $B$
+
+\vspace{0.5cm}
+\STATE $\tilde{\theta} \leftarrow \underset{\theta \in \Theta}{\operatorname{argmax}} X(\theta)$
+\STATE $Z_{\tilde{\theta}} \leftarrow X-\left(\Sigma_{X Y}(\cdot, \tilde{\theta}) / \Sigma_{Y}(\tilde{\theta})\right) Y(\tilde{\theta})$
+
+\vspace{0.5cm}
+\STATE $\mathcal{L}\left(\tilde{\theta}, Z_{\tilde{\theta}}\right) \leftarrow -\inf$
+\FOR{$\theta$ in $|\Theta|$}
+  \STATE $\mathcal{L}\left(\theta, Z_{\tilde{\theta}}\right) \leftarrow \frac{\Sigma_{Y}(\tilde{\theta}) \left(Z_{\tilde{\theta}}(\theta)-Z_{\tilde{\theta}}(\tilde{\theta})\right)}{\Sigma_{X Y}(\tilde{\theta})-\Sigma_{X Y}(\tilde{\theta}, \theta)}$
+  \IF{$\Sigma_{X Y}(\tilde{\theta})>\Sigma_{X Y}(\tilde{\theta}, \theta)$ and $\mathcal{L}\left(\theta, Z_{\tilde{\theta}}\right) > \mathcal{L}\left(\tilde{\theta}, Z_{\tilde{\theta}}\right)$}
+  \STATE $\mathcal{L}\left(\tilde{\theta}, Z_{\tilde{\theta}}\right) \leftarrow \mathcal{L}\left(\theta, Z_{\tilde{\theta}}\right)$
+  \ENDIF
+\ENDFOR
+
+\vspace{0.5cm}
+\STATE $\mathcal{U}\left(\tilde{\theta}, Z_{\tilde{\theta}}\right) \leftarrow \inf$
+\FOR{$\theta$ in $|\Theta|$}
+  \STATE $\mathcal{U}\left(\theta, Z_{\tilde{\theta}}\right) \leftarrow \frac{\Sigma_{Y} (\tilde{\theta})\left(Z_{\tilde{\theta}}(\theta)-Z_{\tilde{\theta}}(\tilde{\theta})\right)}{\Sigma_{X Y}(\tilde{\theta})-\Sigma_{X Y}(\tilde{\theta}, \theta)}$
+  \IF{$\Sigma_{X Y}(\tilde{\theta}) < \Sigma_{X Y}(\tilde{\theta}, \theta)$ and $\mathcal{U} \left(\theta, Z_{\tilde{\theta}}\right) < \mathcal{U}\left(\tilde{\theta}, Z_{\tilde{\theta}}\right)$}
+  \STATE $\mathcal{U}\left(\tilde{\theta}, Z_{\tilde{\theta}}\right) \leftarrow \mathcal{U}\left(\theta, Z_{\tilde{\theta}}\right)$
+  \ENDIF
+\ENDFOR
+
+\vspace{0.5cm}
+\STATE $F_{T N}\left(y ; \mu_{Y}(\theta), \theta, z\right)$ the cdf of $\xi \mid \xi \in \mathcal{Y}(\tilde{\theta}, z)$ with
+\begin{itemize}
+\item $\xi \sim N\left(\mu_{Y}(\tilde{\theta}), \Sigma_{Y}(\tilde{\theta})\right)$
+\item $\mathcal{Y}(\tilde{\theta}, z)=\left\{y: z+\left(\Sigma_{X Y}(\cdot, \tilde{\theta}) / \Sigma_{Y}(\tilde{\theta})\right) y \in \mathcal{X}(\tilde{\theta})\right\}$
+\end{itemize}
+
+\vspace{0.2cm}
+\STATE \textbf{Median:}
+\STATE \hspace{0.3cm} $\hat{\mu}_{\frac{1}{2}} \leftarrow F_{TN}^{-1} \left(Y(\hat{\theta}) ; \cdot, \tilde{\theta}, Z_{\tilde{\theta}}\right)\left(1/2\right)$
+
+\vspace{0.2cm}
+\STATE \textbf{$1-\alpha$ Interval:} $CS_{E T}=\left[\hat{\mu}_{\alpha / 2}, \hat{\mu}_{1-\alpha / 2}\right]$
+\STATE \hspace{0.3cm} $\hat{\mu}_{\alpha/2} \leftarrow F_{TN}^{-1} \left(Y(\hat{\theta}) ; \cdot, \tilde{\theta}, Z_{\tilde{\theta}}\right)\left(1-\alpha/2\right)$
+\STATE \hspace{0.3cm} $\hat{\mu}_{1-\alpha/2} \leftarrow F_{TN}^{-1} \left(Y(\hat{\theta}) ; \cdot, \tilde{\theta}, Z_{\tilde{\theta}}\right)\left(\alpha/2\right)$
+\end{algorithmic}
+\end{algorithm}
+\end{document}
