@@ -75,45 +75,44 @@ def CHYRN(MU, Q, A, B, SIGMA, CV_BETA, SEED=100):
 
 
 # THE NUMBER OF TREATMENT ARMS AND THE INDEX OF THE WINNING ARM.
-TOL = 1e-6
+tol = 1e-6
 K = len(X)
-THETA_TILDE = np.argmax(X)
+theta_tilde = np.argmax(X)
 
 # THE ESTIMATE ASSOCIATED WITH THE WINNING ARM.
-YTILDE = Y[THETA_TILDE]
+YTILDE = Y[theta_tilde]
 
-# (I.) VARIANCE OF ALL OF THE ESTIMATES, (II.) VARIANCE OF THE WINNING ARM,
-# (III.) COVARIANCE OF THE WINNING ARM AND OTHER ARMS, (IV.) VARIANCE OF THE
-# WINNING ARM.
-SIGMAY = SIGMA[K:(2 * K), K:(2 * K)]
-SIGMAYTILDE = SIGMA[K + THETA_TILDE, K + THETA_TILDE]
-SIGMAXYTILDE_VEC = np.array(SIGMA[(K + THETA_TILDE), 0:K])
-SIGMAXYTILDE = SIGMA[THETA_TILDE, (K + THETA_TILDE)]
+# i) variance of all the estimates
+# ii) variance fo the winning arm
+# iii) covariance of the winning arm and other arms
+SIGMAYTILDE = SIGMA[K + theta_tilde, K + theta_tilde]
+SIGMAXYTILDE_VEC = np.array(SIGMA[(K + theta_tilde), 0:K])
+SIGMAXYTILDE = SIGMA[theta_tilde, (K + theta_tilde)]
 
-# NORMALISED DIFFERENCE BETWEEN EACH TREATMENT ARM AND WINNING ARM.
-ZTILDE = np.array(X) - (SIGMA[(K + THETA_TILDE), 0:K]) / SIGMAYTILDE * YTILDE
+# normalised difference between each treatment arm and winning arm
+ZTILDE = np.array(X) - (SIGMA[(K + theta_tilde), 0:K]) / SIGMAYTILDE * YTILDE
 
-# THE LOWER TRUNCATION VALUE.
+# the lower truncation value
 IND_L = SIGMAXYTILDE_VEC < SIGMAXYTILDE
 if sum(IND_L) == 0:
     LTILDE = -np.inf
 if sum(IND_L) > 0:
-    LTILDE = max(SIGMAYTILDE * (ZTILDE[IND_L] - ZTILDE[THETA_TILDE]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_L]))
+    LTILDE = max(SIGMAYTILDE * (ZTILDE[IND_L] - ZTILDE[theta_tilde]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_L]))
 
-# THE UPPER TRUNCATION VALUE.
+# the upper truncation value
 IND_U = SIGMAXYTILDE_VEC > SIGMAXYTILDE
 if sum(IND_U) == 0:
     UTILDE = +np.inf
 if sum(IND_U) > 0:
-    UTILDE = min(SIGMAYTILDE * (ZTILDE[IND_U] - ZTILDE[THETA_TILDE]) /
+    UTILDE = min(SIGMAYTILDE * (ZTILDE[IND_U] - ZTILDE[theta_tilde]) /
                  (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_U]))
 
-# THE V TRUNCATION VALUE.
+# the V truncation value
 IND_V = (SIGMAXYTILDE_VEC == SIGMAXYTILDE)
 if sum(IND_V) == 0:
     VTILDE = 0
 if sum(IND_V) > 0:
-    VTILDE = min(-(ZTILDE[IND_V] - ZTILDE[THETA_TILDE]))
+    VTILDE = min(-(ZTILDE[IND_V] - ZTILDE[theta_tilde]))
 
 """ MED_U_ESTIMATE (MEDIAN UNBIASED ESTIMATE) """
 YHAT = YTILDE
@@ -133,7 +132,7 @@ while CHECK_UNIROOT is False:
     MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSU)]
     PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
     INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
-    HALT_CONDITION = abs(max(np.sign(INTERMEDIATE)) - min(np.sign(INTERMEDIATE))) > TOL
+    HALT_CONDITION = abs(max(np.sign(INTERMEDIATE)) - min(np.sign(INTERMEDIATE))) > tol
     if HALT_CONDITION is True:
         CHECK_UNIROOT = True
     if HALT_CONDITION is False:
@@ -154,7 +153,7 @@ while HALT_CONDITION is False:
     if max(abs(MUGRIDS - PREVIOUS_LINE)) == 0:
         HALT_CONDITION = True
 
-    if (abs(INTERMEDIATE[1]) < TOL) or (abs(MUGRIDSU - MUGRIDSL) < TOL):
+    if (abs(INTERMEDIATE[1]) < tol) or (abs(MUGRIDSU - MUGRIDSL) < tol):
         HALT_CONDITION = True
 
     if np.sign(INTERMEDIATE[0]) == np.sign(INTERMEDIATE[1]):
@@ -168,113 +167,5 @@ while HALT_CONDITION is False:
 MED_U_ESTIMATE = PYHAT
 
 # RESTORE GLOBAL ENVIRONMENT TO ORIGINAL STATE.
-del YHAT, SIGMAYHAT, L, U, SIZE, NMC, CHECK_UNIROOT, k, SCALE, MUGRIDSL, MUGRIDSU, MUGRIDS
-del INTERMEDIATE, HALT_CONDITION, MUGRIDSM, PREVIOUS_LINE, PYHAT
-
-""" EQUI_CI_UPPER """
-YHAT = YTILDE
-SIGMAYHAT = SIGMAYTILDE
-L = LTILDE
-U = UTILDE
-SIZE = 1 - ALPHA / 2
-NMC = NDRAWS
-
-CHECK_UNIROOT = False
-k = K
-
-while CHECK_UNIROOT is False:
-    SCALE = k
-    MUGRIDSL = YHAT - SCALE * np.sqrt(SIGMAYHAT)
-    MUGRIDSU = YHAT + SCALE * np.sqrt(SIGMAYHAT)
-    MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSU)]
-    PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
-    INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
-    HALT_CONDITION = abs(max(np.sign(INTERMEDIATE)) - min(np.sign(INTERMEDIATE))) > TOL
-
-    if HALT_CONDITION is True:
-        CHECK_UNIROOT = True
-
-    if HALT_CONDITION is False:
-        k = 2 * k
-
-HALT_CONDITION = False
-MUGRIDS = [0] * 3
-
-while HALT_CONDITION is False:
-    MUGRIDSM = (MUGRIDSL + MUGRIDSU) / 2
-    PREVIOUS_LINE = MUGRIDS
-    MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSM), np.float(MUGRIDSU)]
-    PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
-    INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
-
-    if max(abs(MUGRIDS - PREVIOUS_LINE)) == 0:
-        HALT_CONDITION = True
-    if (abs(INTERMEDIATE[1]) < TOL) or (abs(MUGRIDSU - MUGRIDSL) < TOL):
-        HALT_CONDITION = True
-
-    if np.sign(INTERMEDIATE[0]) == np.sign(INTERMEDIATE[1]):
-        MUGRIDSL = MUGRIDSM
-
-    if np.sign(INTERMEDIATE[2]) == np.sign(INTERMEDIATE[1]):
-        MUGRIDSU = MUGRIDSM
-
-    PYHAT = MUGRIDSM
-
-EQUICI_UPPER = PYHAT
-
-del YHAT, SIGMAYHAT, L, U, SIZE, NMC, CHECK_UNIROOT, k, SCALE, MUGRIDSL, MUGRIDSU, MUGRIDS
-del INTERMEDIATE, HALT_CONDITION, MUGRIDSM, PREVIOUS_LINE, PYHAT
-
-""" EQUI_CI_LOWER """
-YHAT = YTILDE
-SIGMAYHAT = SIGMAYTILDE
-L = LTILDE
-U = UTILDE
-SIZE = ALPHA / 2
-NMC = NDRAWS
-
-CHECK_UNIROOT = False
-k = K
-
-while CHECK_UNIROOT is False:
-    SCALE = k
-    MUGRIDSL = YHAT - SCALE * np.sqrt(SIGMAYHAT)
-    MUGRIDSU = YHAT + SCALE * np.sqrt(SIGMAYHAT)
-    MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSU)]
-    PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
-    INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
-    HALT_CONDITION = abs(max(np.sign(INTERMEDIATE)) - min(np.sign(INTERMEDIATE))) > TOL
-
-    if HALT_CONDITION is True:
-        CHECK_UNIROOT = True
-
-    if HALT_CONDITION is False:
-        k = 2 * k
-
-HALT_CONDITION = False
-MUGRIDS = [0] * 3
-
-while HALT_CONDITION is False:
-    MUGRIDSM = (MUGRIDSL + MUGRIDSU) / 2
-    PREVIOUS_LINE = MUGRIDS
-    MUGRIDS = [np.float(MUGRIDSL), np.float(MUGRIDSM), np.float(MUGRIDSU)]
-    PTRN2_ = partial(PTRN2, Q=YHAT, A=L, B=U, SIGMA=np.sqrt(SIGMAYHAT), N=NMC)
-    INTERMEDIATE = np.array(list(map(PTRN2_, MUGRIDS))) - (1 - SIZE)
-
-    if max(abs(MUGRIDS - PREVIOUS_LINE)) == 0:
-        HALT_CONDITION = True
-    if (abs(INTERMEDIATE[1]) < TOL) or (abs(MUGRIDSU - MUGRIDSL) < TOL):
-        HALT_CONDITION = True
-
-    if np.sign(INTERMEDIATE[0]) == np.sign(INTERMEDIATE[1]):
-        MUGRIDSL = MUGRIDSM
-
-    if np.sign(INTERMEDIATE[2]) == np.sign(INTERMEDIATE[1]):
-        MUGRIDSU = MUGRIDSM
-
-    PYHAT = MUGRIDSM
-
-EQUICI_LOWER = PYHAT
-
 del YHAT, SIGMAYHAT, L, U, SIZE, NMC, CHECK_UNIROOT, k, SCALE, MUGRIDSL, MUGRIDSU, MUGRIDS
 del INTERMEDIATE, HALT_CONDITION, MUGRIDSM, PREVIOUS_LINE, PYHAT
