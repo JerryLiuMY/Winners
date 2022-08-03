@@ -23,3 +23,4 @@ sigma = np.diag(
 ndraws = 10000
 
 INPUT = np.random.normal(size=len(X) * ndraws).reshape(ndraws, -1)  # draw from standard normal distribution
+tol = 1e-16
