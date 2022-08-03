@@ -1,7 +1,7 @@
 from scipy.stats import truncnorm
 from functools import partial
 import numpy as np
-from conditional import YTILDE, SIGMAYTILDE, LTILDE, UTILDE, K
+from conditional import ytilde, sigmaytilde, ltilde, utilde, K
 from params import ndraws
 
 
@@ -45,10 +45,10 @@ def CHYRN(MU, Q, A, B, SIGMA, CV_BETA, SEED=100):
     return CUT
 
 
-YHAT = YTILDE
-SIGMAYHAT = SIGMAYTILDE
-L = LTILDE
-U = UTILDE
+YHAT = ytilde
+SIGMAYHAT = sigmaytilde
+L = ltilde
+U = utilde
 SIZE = 0.5
 tol = 1e-6
 NMC = ndraws

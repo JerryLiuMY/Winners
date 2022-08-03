@@ -1,4 +1,4 @@
-from params import X, SIGMA, ndraws
+from params import X, SIGMA
 import numpy as np
 
 # Generate data
@@ -7,38 +7,38 @@ K = len(X)  # number of treatment arms and the index of the winning arm
 SIGMA = np.kron(np.array([[1, 1], [1, 1]]), SIGMA)  # replicate the covariance matrix
 
 # Compute variables
-THETA_TILDE = np.argmax(X)  # index of the winning arm
-YTILDE = Y[THETA_TILDE]  # estimate associated with the winning arm
-SIGMAYTILDE = SIGMA[K + THETA_TILDE, K + THETA_TILDE]  # variance of all the estimates
-SIGMAXYTILDE_VEC = np.array(SIGMA[(K + THETA_TILDE), 0:K])  # variance fo the winning arm
-SIGMAXYTILDE = SIGMA[THETA_TILDE, (K + THETA_TILDE)]  # covariance of the winning arm and other arms
+theta_tilde = np.argmax(X)  # index of the winning arm
+ytilde = Y[theta_tilde]  # estimate associated with the winning arm
+sigmaytilde = SIGMA[K + theta_tilde, K + theta_tilde]  # variance of all the estimates
+sigmaxytilde_vec = np.array(SIGMA[(K + theta_tilde), 0:K])  # covariance of the winning arm and other arms
+sigmaxytilde = SIGMA[theta_tilde, (K + theta_tilde)]  # variance of the winning arm
 
 # Normalised difference between each treatment arm and winning arm
-ZTILDE = np.array(X) - (SIGMA[(K + THETA_TILDE), 0:K]) / SIGMAYTILDE * YTILDE
+ztilde = np.array(X) - (SIGMA[(K + theta_tilde), 0:K]) / sigmaytilde * ytilde
 
 # The lower truncation value
-IND_L = SIGMAXYTILDE_VEC < SIGMAXYTILDE
-if sum(IND_L) == 0:
-    LTILDE = -np.inf
-elif sum(IND_L) > 0:
-    LTILDE = max(SIGMAYTILDE * (ZTILDE[IND_L] - ZTILDE[THETA_TILDE]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_L]))
+ind_l = sigmaxytilde > sigmaxytilde_vec
+if sum(ind_l) == 0:
+    ltilde = -np.inf
+elif sum(ind_l) > 0:
+    ltilde = max(sigmaytilde * (ztilde[ind_l] - ztilde[theta_tilde]) / (sigmaxytilde - sigmaxytilde_vec[ind_l]))
 else:
     raise ValueError("Invalid IND_L value")
 
 # The upper truncation value
-IND_U = SIGMAXYTILDE_VEC > SIGMAXYTILDE
-if sum(IND_U) == 0:
-    UTILDE = +np.inf
-elif sum(IND_U) > 0:
-    UTILDE = min(SIGMAYTILDE * (ZTILDE[IND_U] - ZTILDE[THETA_TILDE]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_U]))
+ind_u = sigmaxytilde < sigmaxytilde_vec
+if sum(ind_u) == 0:
+    utilde = +np.inf
+elif sum(ind_u) > 0:
+    utilde = min(sigmaytilde * (ztilde[ind_u] - ztilde[theta_tilde]) / (sigmaxytilde - sigmaxytilde_vec[ind_u]))
 else:
     raise ValueError("Invalid IND_L value")
 
-# the V truncation value
-IND_V = (SIGMAXYTILDE_VEC == SIGMAXYTILDE)
-if sum(IND_V) == 0:
-    VTILDE = 0
-elif sum(IND_V) > 0:
-    VTILDE = min(-(ZTILDE[IND_V] - ZTILDE[THETA_TILDE]))
+# The V truncation value
+ind_v = (sigmaxytilde_vec == sigmaxytilde)
+if sum(ind_v) == 0:
+    vtilde = 0
+elif sum(ind_v) > 0:
+    vtilde = min(-(ztilde[ind_v] - ztilde[theta_tilde]))
 else:
     raise ValueError("Invalid IND_L value")
