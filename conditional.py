@@ -1,37 +1,50 @@
-import numpy as np
+from params import X, SIGMA, ndraws
 from scipy.stats import truncnorm
 from functools import partial
+import numpy as np
 
-X = [0.813267813267813, 0.612068965517241, 0.713670613562971, 0.922330097087379, 0.81270182992465,
-     0.980603448275862, 0.891891891891892, 0.780409041980624, 1.51619870410367, 0.786637931034482,
-     0.92572658772874, 1.27076591154261, 1.02909482758621, 1.4217907227616, 0.81270182992465,
-     1.50699677072121, 0.575135135135135, 1.33620689655172, 1.02047413793103, 0.528586839266451,
-     0.862068965517241, 1.11530172413793, 1.10118406889128, 1.22306034482759, 0.808189655172414,
-     1.24379719525351, 0.905172413793104, 1.40280777537797, 0.811218985976268, 0.88133764832794,
-     0.69073275862069, 1.26049515608181, 0.579288025889968, 0.702586206896552, 0.890301724960064,
-     0.964439655172413, 0.92170626349892]
+# Generate data
+INPUT = np.random.normal(size=len(X) * ndraws).reshape(ndraws, -1)  # draw from standard normal distribution
+Y = X  # replicate the vector of estimates
+K = len(X)  # number of treatment arms and the index of the winning arm
+SIGMA = np.kron(np.array([[1, 1], [1, 1]]), SIGMA)  # replicate the covariance matrix
 
-SIGMA = np.diag(
-    [0.00400616351128161, 0.030059017384886, 0.102029725567161, 0.088658020114521, 0.104295636149854,
-     0.0737445782342327, 0.0654365980297311, 0.0518042635802516, 0.12079318490481, 0.0684821760626574,
-     0.0644857835659649, 0.255533140108395, 0.102640335212518, 0.153208002787522, 0.0592803935368147,
-     0.211508149115732, 0.0401274251080888, 0.184853763479433, 0.0659587393534699, 0.0212852032792557,
-     0.0517431174146126, 0.0817138529228554, 0.0995694163979758, 0.0917188736769625, 0.071057820115819,
-     0.12137947379161, 0.0620537018481698, 0.130066325704489, 0.0460172568626761, 0.0563916115263375,
-     0.0371677136381132, 0.0955191702042282, 0.0330349869841438, 0.0397080226677499, 0.090992021208343,
-     0.0892513406062135, 0.0530575476212782]
-)
+# Compute variables
+theta_tilde = np.argmax(X)  # index of the winning arm
+YTILDE = Y[theta_tilde]  # estimate associated with the winning arm
+SIGMAYTILDE = SIGMA[K + theta_tilde, K + theta_tilde]  # variance of all the estimates
+SIGMAXYTILDE_VEC = np.array(SIGMA[(K + theta_tilde), 0:K])  # variance fo the winning arm
+SIGMAXYTILDE = SIGMA[theta_tilde, (K + theta_tilde)]  # covariance of the winning arm and other arms
 
-NDRAWS = 10000
-ALPHA = 0.05
-BETA = 0.005
+# Normalised difference between each treatment arm and winning arm
+ZTILDE = np.array(X) - (SIGMA[(K + theta_tilde), 0:K]) / SIGMAYTILDE * YTILDE
 
-# DRAW FROM THE STANDARD NORMAL DISTRIBUTION WITH FIXED SEED.
-# REPLICATE THE VECTOR OF ESTIMATES.
-# REPLICATE THE VARIANCE MATRIX.
-INPUT = np.random.normal(size=len(X) * NDRAWS).reshape(NDRAWS, -1)
-Y = X
-SIGMA = np.kron(np.array([[1, 1], [1, 1]]), SIGMA)
+# The lower truncation value
+IND_L = SIGMAXYTILDE_VEC < SIGMAXYTILDE
+if sum(IND_L) == 0:
+    LTILDE = -np.inf
+elif sum(IND_L) > 0:
+    LTILDE = max(SIGMAYTILDE * (ZTILDE[IND_L] - ZTILDE[theta_tilde]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_L]))
+else:
+    raise ValueError("Invalid IND_L value")
+
+# The upper truncation value
+IND_U = SIGMAXYTILDE_VEC > SIGMAXYTILDE
+if sum(IND_U) == 0:
+    UTILDE = +np.inf
+elif sum(IND_U) > 0:
+    UTILDE = min(SIGMAYTILDE * (ZTILDE[IND_U] - ZTILDE[theta_tilde]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_U]))
+else:
+    raise ValueError("Invalid IND_L value")
+
+# the V truncation value
+IND_V = (SIGMAXYTILDE_VEC == SIGMAXYTILDE)
+if sum(IND_V) == 0:
+    VTILDE = 0
+elif sum(IND_V) > 0:
+    VTILDE = min(-(ZTILDE[IND_V] - ZTILDE[theta_tilde]))
+else:
+    raise ValueError("Invalid IND_L value")
 
 
 # APPROXIMATION OF THE CUMULATIVE DISTRIBUTION FUNCTION (I.E., X[I] <= Q) OF THE
@@ -46,53 +59,13 @@ def PTRN2(MU, Q, A, B, SIGMA, N, SEED=100):
 
     return TAIL_PROB
 
-
-# The number of treatment arms and the index of the winning arm
-K = len(X)
-theta_tilde = np.argmax(X)
-
-# The estimate associated with the winning arm
-YTILDE = Y[theta_tilde]
-
-# i) variance of all the estimates
-# ii) variance fo the winning arm
-# iii) covariance of the winning arm and other arms
-SIGMAYTILDE = SIGMA[K + theta_tilde, K + theta_tilde]
-SIGMAXYTILDE_VEC = np.array(SIGMA[(K + theta_tilde), 0:K])
-SIGMAXYTILDE = SIGMA[theta_tilde, (K + theta_tilde)]
-
-# normalised difference between each treatment arm and winning arm
-ZTILDE = np.array(X) - (SIGMA[(K + theta_tilde), 0:K]) / SIGMAYTILDE * YTILDE
-
-# the lower truncation value
-IND_L = SIGMAXYTILDE_VEC < SIGMAXYTILDE
-if sum(IND_L) == 0:
-    LTILDE = -np.inf
-if sum(IND_L) > 0:
-    LTILDE = max(SIGMAYTILDE * (ZTILDE[IND_L] - ZTILDE[theta_tilde]) / (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_L]))
-
-# the upper truncation value
-IND_U = SIGMAXYTILDE_VEC > SIGMAXYTILDE
-if sum(IND_U) == 0:
-    UTILDE = +np.inf
-if sum(IND_U) > 0:
-    UTILDE = min(SIGMAYTILDE * (ZTILDE[IND_U] - ZTILDE[theta_tilde]) /
-                 (SIGMAXYTILDE - SIGMAXYTILDE_VEC[IND_U]))
-
-# the V truncation value
-IND_V = (SIGMAXYTILDE_VEC == SIGMAXYTILDE)
-if sum(IND_V) == 0:
-    VTILDE = 0
-if sum(IND_V) > 0:
-    VTILDE = min(-(ZTILDE[IND_V] - ZTILDE[theta_tilde]))
-
-""" MED_U_ESTIMATE (MEDIAN UNBIASED ESTIMATE) """
+# Median unbiased estimate
 YHAT = YTILDE
 SIGMAYHAT = SIGMAYTILDE
 L = LTILDE
 U = UTILDE
 SIZE = 0.5
-NMC = NDRAWS
+NMC = ndraws
 
 CHECK_UNIROOT = False
 k = K
