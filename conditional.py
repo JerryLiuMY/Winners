@@ -34,17 +34,6 @@ Y = X
 SIGMA = np.kron(np.array([[1, 1], [1, 1]]), SIGMA)
 
 
-# COMPUTATION OF THE MEAN OF THE TRUNCATED NORMAL DISTRIBUTION, WHERE (A,B) ARE
-# THE TRUNCATION POINTS AND THE MEAN IS MU.
-def ETRN2(MU, A, B, SIGMA, N, SEED=100):
-    np.random.seed(SEED)
-    TAIL_PROB = SIGMA * np.mean(
-        truncnorm.ppf(q=np.random.uniform(N), a=[(A - MU) / SIGMA] * N, b=np.array([(B - MU) / SIGMA] * N) + MU)
-    )
-
-    return TAIL_PROB
-
-
 # APPROXIMATION OF THE CUMULATIVE DISTRIBUTION FUNCTION (I.E., X[I] <= Q) OF THE
 # TRUNCATED NORMAL DISTRIBUTION, WHERE WHERE (A,B) ARE THE TRUNCATION POINTS AND
 # THE MEAN IS MU.
@@ -58,28 +47,11 @@ def PTRN2(MU, Q, A, B, SIGMA, N, SEED=100):
     return TAIL_PROB
 
 
-# FINDS THE THRESHOLD FOR CONFIDENCE REGION EVALUATION.
-def CUTRN(MU, Q, A, B, SIGMA, SEED=100):
-    np.random.seed(SEED)
-    CUT = SIGMA * truncnorm.ppf(q=Q, a=(A - MU) / SIGMA, b=(B - MU) / SIGMA) + MU
-
-    return CUT
-
-
-# FINDS THE THRESHOLD FOR CONFIDENCE REGION EVALUATION IN THE HYBRID SETTING.
-def CHYRN(MU, Q, A, B, SIGMA, CV_BETA, SEED=100):
-    np.random.seed(SEED)
-    CUT = SIGMA * truncnorm.ppf(p=Q, a=max((A - MU) / SIGMA, -CV_BETA), b=min((B - MU) / SIGMA, +CV_BETA)) + MU
-
-    return CUT
-
-
-# THE NUMBER OF TREATMENT ARMS AND THE INDEX OF THE WINNING ARM.
-tol = 1e-6
+# The number of treatment arms and the index of the winning arm
 K = len(X)
 theta_tilde = np.argmax(X)
 
-# THE ESTIMATE ASSOCIATED WITH THE WINNING ARM.
+# The estimate associated with the winning arm
 YTILDE = Y[theta_tilde]
 
 # i) variance of all the estimates
@@ -166,6 +138,29 @@ while HALT_CONDITION is False:
 
 MED_U_ESTIMATE = PYHAT
 
-# RESTORE GLOBAL ENVIRONMENT TO ORIGINAL STATE.
-del YHAT, SIGMAYHAT, L, U, SIZE, NMC, CHECK_UNIROOT, k, SCALE, MUGRIDSL, MUGRIDSU, MUGRIDS
-del INTERMEDIATE, HALT_CONDITION, MUGRIDSM, PREVIOUS_LINE, PYHAT
+
+# COMPUTATION OF THE MEAN OF THE TRUNCATED NORMAL DISTRIBUTION, WHERE (A,B) ARE
+# THE TRUNCATION POINTS AND THE MEAN IS MU.
+def ETRN2(MU, A, B, SIGMA, N, SEED=100):
+    np.random.seed(SEED)
+    TAIL_PROB = SIGMA * np.mean(
+        truncnorm.ppf(q=np.random.uniform(N), a=[(A - MU) / SIGMA] * N, b=np.array([(B - MU) / SIGMA] * N) + MU)
+    )
+
+    return TAIL_PROB
+
+
+# FINDS THE THRESHOLD FOR CONFIDENCE REGION EVALUATION.
+def CUTRN(MU, Q, A, B, SIGMA, SEED=100):
+    np.random.seed(SEED)
+    CUT = SIGMA * truncnorm.ppf(q=Q, a=(A - MU) / SIGMA, b=(B - MU) / SIGMA) + MU
+
+    return CUT
+
+
+# FINDS THE THRESHOLD FOR CONFIDENCE REGION EVALUATION IN THE HYBRID SETTING.
+def CHYRN(MU, Q, A, B, SIGMA, CV_BETA, SEED=100):
+    np.random.seed(SEED)
+    CUT = SIGMA * truncnorm.ppf(p=Q, a=max((A - MU) / SIGMA, -CV_BETA), b=min((B - MU) / SIGMA, +CV_BETA)) + MU
+
+    return CUT
