@@ -49,13 +49,21 @@ def etrn2(mu, ltilde, utilde, sigma, N, seed=100):
     return tail_prob
 
 
-# FINDS THE THRESHOLD FOR CONFIDENCE REGION EVALUATION.
-def CUTRN(MU, Q, A, B, SIGMA, SEED=100):
-    np.random.seed(SEED)
-    CUT = SIGMA * truncnorm.ppf(q=Q, a=(A - MU) / SIGMA, b=(B - MU) / SIGMA) + MU
+def cutrn(mu, quantile, ltilde, utilde, sigma, seed=100):
+    """ Find the threshold for confidence region evaluation
+    :param mu: mean
+    :param quantile: quantile
+    :param ltilde: lower truncation point
+    :param utilde: upper truncation point
+    :param sigma:
+    :param seed: random seed
+    :return:
+    """
 
-    return CUT
+    np.random.seed(seed)
+    cut = sigma * truncnorm.ppf(
+        q=quantile,
+        a=(ltilde - mu) / sigma,
+        b=(utilde - mu) / sigma) + mu
 
-
-# THE NUMBER OF TREATMENT ARMS AND THE INDEX OF THE WINNING ARM.
-TOL = 1e-6
+    return cut
