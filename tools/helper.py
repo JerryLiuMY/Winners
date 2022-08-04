@@ -1,5 +1,5 @@
-import numpy as np
 from scipy.stats import truncnorm
+import numpy as np
 
 
 def ptrn2(mu, quantile, ltilde, utilde, sigma, N, seed=100):
@@ -8,7 +8,7 @@ def ptrn2(mu, quantile, ltilde, utilde, sigma, N, seed=100):
     :param quantile: quantile
     :param ltilde: lower truncation point
     :param utilde: upper truncation point
-    :param sigma:
+    :param sigma: variance of winning arm
     :param N: number of samples
     :param seed: random seed
     :return: tail probability
@@ -31,7 +31,7 @@ def etrn2(mu, ltilde, utilde, sigma, N, seed=100):
     :param mu: mean
     :param ltilde: lower truncation point
     :param utilde: upper truncation point
-    :param sigma:
+    :param sigma: variance of winning arm
     :param N: number of samples
     :param seed: random seed
     :return: tail probability
@@ -47,23 +47,3 @@ def etrn2(mu, ltilde, utilde, sigma, N, seed=100):
     )
 
     return tail_prob
-
-
-def cutrn(mu, quantile, ltilde, utilde, sigma, seed=100):
-    """ Find the threshold for confidence region evaluation
-    :param mu: mean
-    :param quantile: quantile
-    :param ltilde: lower truncation point
-    :param utilde: upper truncation point
-    :param sigma:
-    :param seed: random seed
-    :return:
-    """
-
-    np.random.seed(seed)
-    cut = sigma * truncnorm.ppf(
-        q=quantile,
-        a=(ltilde - mu) / sigma,
-        b=(utilde - mu) / sigma) + mu
-
-    return cut
