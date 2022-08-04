@@ -9,9 +9,9 @@ class RD(object):
         self.Y = Y
         self.T = T
         self.b = b
-        self.narms = len(set(T))
+        self.k = len(set(T))
         self.null = null
-        if set(T) != set(np.arange(self.narms)):
+        if set(T) != set(np.arange(self.k)):
             raise ValueError("Wrong T.")
 
     def sample_splitting(self, Y, T, row_idx1):
@@ -40,8 +40,8 @@ class RD(object):
         return best_arm
 
     def get_residual(self):
-        mu_params = np.zeros(self.narms)
-        for i in range(self.narms):
+        mu_params = np.zeros(self.k)
+        for i in range(self.k):
             mu_params[i] = np.mean(self.Y[self.T == i])
             # mu_params[i] = (np.arange(5)-4)[i]
         mu_params[np.argmax(mu_params)] = self.null

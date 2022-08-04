@@ -12,19 +12,20 @@ sigmaytilde = sigma[theta_tilde, theta_tilde]  # variance of all the estimates
 sigmaytilde_vec = np.array(sigma[theta_tilde, 0:k])  # covariance of the winning arm and other arms
 ztilde = np.array(Y) - (sigma[theta_tilde, 0:k]) / sigmaytilde * ytilde  # normalised difference
 
+
 class WINNERS(object):
 
-    def __init__(self, Y, Z, b, null=0):
+    def __init__(self, Y, T, b, null=0):
         self.n = len(Y)
         self.Y = Y
-        self.Z = Z
+        self.T = T
         self.b = b
-        self.narms = len(set(Z))
+        self.k = len(set(T))
         self.null = null
-        if set(Z) != set(np.arange(self.narms)):
-            raise ValueError("Wrong Z.")
+        if set(T) != set(np.arange(self.k)):
+            raise ValueError("Wrong T.")
 
-    def get_truncation():
+    def get_truncation(self,):
         """ Get the truncation threshold for the truncated normal distribution
         :return:
         """
@@ -61,8 +62,7 @@ class WINNERS(object):
 
         return ltilde, utilde
 
-
-    def search_mu(ltilde, utilde, size):
+    def search_mu(self, ltilde, utilde, size):
         """ Get median estimate via bisection search algorithm
         :param ltilde: the lower truncation value
         :param utilde: the upper truncation value
