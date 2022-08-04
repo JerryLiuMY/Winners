@@ -21,13 +21,13 @@ class DGP(object):
     def get_potentials(self):
         Y = np.zeros((self.n, self.k))
         for i in range(self.k):
-            Y[:,i] = np.random.normal(self.means[i], self.vars[i], size=self.n)
+            Y[:, i] = np.random.normal(self.means[i], self.vars[i], size=self.n)
         return Y
 
     def get_treatment(self):
         Z = []
         for i in range(self.k):
-            Z += [i]*int(self.n/self.k)
+            Z += [i] * int(self.n / self.k)
         Z = np.array(Z)
         np.random.shuffle(Z)
         return Z
@@ -37,5 +37,5 @@ class DGP(object):
         Z = self.get_treatment()
         Y = np.zeros(self.n)
         for i in range(self.k):
-            Y[Z==i] = Yp[Z==i,i]
+            Y[Z == i] = Yp[Z == i, i]
         return Y, Z
