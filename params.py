@@ -1,4 +1,6 @@
 import numpy as np
+tol = 1e-16
+ndraws = 10000
 
 X = [0.813267813267813, 0.612068965517241, 0.713670613562971, 0.922330097087379, 0.81270182992465,
      0.980603448275862, 0.891891891891892, 0.780409041980624, 1.51619870410367, 0.786637931034482,
@@ -20,7 +22,5 @@ sigma = np.diag(
      0.0892513406062135, 0.0530575476212782]
 )
 
-ndraws = 10000
-
-INPUT = np.random.normal(size=len(X) * ndraws).reshape(ndraws, -1)  # draw from standard normal distribution
-tol = 1e-16
+# draw from standard normal distribution
+inputs = np.random.normal(size=len(X) * ndraws).reshape(ndraws, -1)
