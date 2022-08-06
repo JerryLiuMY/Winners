@@ -1,29 +1,27 @@
 from functools import partial
 from tools.helper import ptrn2
-from params.params import Y, sigma, ndraws, tol
+from params.params import sigma, ndraws, tol
 import numpy as np
-
-
-# compute variables
-k = len(Y)  # number of treatment arms
-theta_tilde = np.argmax(Y)  # index of the winning arm
-ytilde = Y[theta_tilde]  # estimate associated with the winning arm
-sigmaytilde = sigma[theta_tilde, theta_tilde]  # variance of all the estimates
-sigmaytilde_vec = np.array(sigma[theta_tilde, 0:k])  # covariance of the winning arm and other arms
-ztilde = np.array(Y) - (sigma[theta_tilde, 0:k]) / sigmaytilde * ytilde  # normalised difference
 
 
 class WINNERS(object):
 
-    def __init__(self, Y, T, b, null=0):
-        self.n = len(Y)
+    def __init__(self, Y, T, b):
         self.Y = Y
         self.T = T
         self.b = b
-        self.k = len(set(T))
-        self.null = null
-        if set(T) != set(np.arange(self.k)):
-            raise ValueError("Wrong T.")
+        self.k = len(Y)
+
+        # index of the winning arm
+        self.theta_tilde = np.argmax(self.Y)
+        # estimate associated with the winning arm
+        self.ytilde = Y[self.theta_tilde]
+        # variance of all the estimates
+        self.sigmaytilde = sigma[self.theta_tilde, self.theta_tilde]
+        # covariance of the winning arm and other arms
+        self.sigmaytilde_vec = np.array(sigma[self.theta_tilde, 0:self.k])
+        # normalised difference
+        self.ztilde = np.array(Y) - (sigma[self.theta_tilde, 0:self.k]) / self.sigmaytilde * self.ytilde
 
     def get_truncation(self,):
         """ Get the truncation threshold for the truncated normal distribution
@@ -31,29 +29,31 @@ class WINNERS(object):
         """
 
         # The lower truncation value
-        ind_l = sigmaytilde > sigmaytilde_vec
+        ind_l = self.sigmaytilde > self.sigmaytilde_vec
         if sum(ind_l) == 0:
             ltilde = -np.inf
         elif sum(ind_l) > 0:
-            ltilde = max(sigmaytilde * (ztilde[ind_l] - ztilde[theta_tilde]) / (sigmaytilde - sigmaytilde_vec[ind_l]))
+            ltilde = max(self.sigmaytilde * (self.ztilde[ind_l] - self.ztilde[self.theta_tilde]) /
+                         (self.sigmaytilde - self.sigmaytilde_vec[ind_l]))
         else:
             raise ValueError("Invalid ind_l value")
 
         # The upper truncation value
-        ind_u = sigmaytilde < sigmaytilde_vec
+        ind_u = self.sigmaytilde < self.sigmaytilde_vec
         if sum(ind_u) == 0:
             utilde = +np.inf
         elif sum(ind_u) > 0:
-            utilde = min(sigmaytilde * (ztilde[ind_u] - ztilde[theta_tilde]) / (sigmaytilde - sigmaytilde_vec[ind_u]))
+            utilde = min(self.sigmaytilde * (self.ztilde[ind_u] - self.ztilde[self.theta_tilde]) /
+                         (self.sigmaytilde - self.sigmaytilde_vec[ind_u]))
         else:
             raise ValueError("Invalid ind_u value")
 
         # The V truncation value
-        ind_v = (sigmaytilde_vec == sigmaytilde)
+        ind_v = (self.sigmaytilde_vec == self.sigmaytilde)
         if sum(ind_v) == 0:
             vtilde = 0
         elif sum(ind_v) > 0:
-            vtilde = min(-(ztilde[ind_v] - ztilde[theta_tilde]))
+            vtilde = min(-(self.ztilde[ind_v] - self.ztilde[self.theta_tilde]))
         else:
             raise ValueError("Invalid ind_v value")
 
@@ -70,9 +70,9 @@ class WINNERS(object):
         :return:
         """
 
-        yhat = ytilde
-        sigmayhat = sigmaytilde
-        k = len(Y)
+        yhat = self.ytilde
+        sigmayhat = self.sigmaytilde
+        k = self.k
 
         # initialize loop
         check_uniroot = False
