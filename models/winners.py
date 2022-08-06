@@ -76,13 +76,13 @@ class WINNERS(object):
         # initialize loop
         check_uniroot = False
         while check_uniroot is False:
+            print("check_uniroot")
             scale = k
             mugridsl = yhat - scale * np.sqrt(sigmayhat)
             mugridsu = yhat + scale * np.sqrt(sigmayhat)
             mugrids = np.array([np.float(mugridsl), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=1)
+            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
             intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
-
             halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
             if halt_condition is True:
                 check_uniroot = True
@@ -93,10 +93,11 @@ class WINNERS(object):
         mugrids = np.array([0] * 3)
         halt_condition = False
         while halt_condition is False:
+            print("halt_condition")
             mugridsm = (mugridsl + mugridsu) / 2
             previous_line = mugrids
             mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=1)
+            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
             intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
 
             if max(abs(mugrids - previous_line)) == 0:
