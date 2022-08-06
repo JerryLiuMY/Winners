@@ -1,15 +1,14 @@
 from functools import partial
 from tools.helper import ptrn2
-from params.params import sigma, ndraws, tol
+from params.params import tol
 import numpy as np
 
 
 class WINNERS(object):
 
-    def __init__(self, Y, T, b):
+    def __init__(self, Y, sigma):
         self.Y = Y
-        self.T = T
-        self.b = b
+        self.sigma = sigma
         self.k = len(Y)
 
         # index of the winning arm
@@ -17,13 +16,13 @@ class WINNERS(object):
         # estimate associated with the winning arm
         self.ytilde = Y[self.theta_tilde]
         # variance of all the estimates
-        self.sigmaytilde = sigma[self.theta_tilde, self.theta_tilde]
+        self.sigmaytilde = self.sigma[self.theta_tilde, self.theta_tilde]
         # covariance of the winning arm and other arms
-        self.sigmaytilde_vec = np.array(sigma[self.theta_tilde, 0:self.k])
+        self.sigmaytilde_vec = np.array(self.sigma[self.theta_tilde, 0: self.k])
         # normalised difference
-        self.ztilde = np.array(Y) - (sigma[self.theta_tilde, 0:self.k]) / self.sigmaytilde * self.ytilde
+        self.ztilde = np.array(Y) - (self.sigma[self.theta_tilde, 0: self.k]) / self.sigmaytilde * self.ytilde
 
-    def get_truncation(self,):
+    def get_truncation(self):
         """ Get the truncation threshold for the truncated normal distribution
         :return:
         """
@@ -62,11 +61,11 @@ class WINNERS(object):
 
         return ltilde, utilde
 
-    def search_mu(self, ltilde, utilde, size):
+    def search_mu(self, ltilde, utilde, alpha):
         """ Get median estimate via bisection search algorithm
         :param ltilde: the lower truncation value
         :param utilde: the upper truncation value
-        :param size: quantile to find inverse
+        :param alpha: quantile to find inverse
         :return:
         """
 
@@ -81,8 +80,8 @@ class WINNERS(object):
             mugridsl = yhat - scale * np.sqrt(sigmayhat)
             mugridsu = yhat + scale * np.sqrt(sigmayhat)
             mugrids = np.array([np.float(mugridsl), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=ndraws)
-            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - size)
+            ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=1)
+            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
 
             halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
             if halt_condition is True:
@@ -97,8 +96,8 @@ class WINNERS(object):
             mugridsm = (mugridsl + mugridsu) / 2
             previous_line = mugrids
             mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=ndraws)
-            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - size)
+            ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=1)
+            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
 
             if max(abs(mugrids - previous_line)) == 0:
                 halt_condition = True
