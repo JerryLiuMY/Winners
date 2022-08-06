@@ -37,10 +37,12 @@ def plot_naive():
     coverage_arr = np.round(coverage_arr, 2)
 
     # plot coverage rate
-    fig, ax = plt.subplots(1, 1)
+    fig, ax = plt.subplots(1, 1, figsize=(8, 5))
     ax.plot(coverage_arr[0, :], "o-", label="ntreat=2")
     ax.plot(coverage_arr[1, :], "v-", label="ntreat=10")
     ax.plot(coverage_arr[2, :], "*-", label="ntreat=50")
+    ax.set_xticks(np.arange(len(diffs)))
+    ax.set_xticklabels([val if idx % 2 == 0 else "" for idx, val in enumerate(diffs)])
     ax.set_xlabel("Difference")
     ax.set_ylabel("coverage probability")
     ax.set_title("Unconditional coverage probability of Conventional 95% CIs")
