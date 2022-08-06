@@ -1,5 +1,5 @@
 from functools import partial
-from tools.helper import ptrn2
+from tools.func import ptrn2
 from params.params import tol
 import numpy as np
 
