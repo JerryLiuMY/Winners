@@ -3,16 +3,16 @@ import numpy as np
 
 class DGP(object):
 
-    def __init__(self, nsamples, narms, means, vars):
+    def __init__(self, nsamples, narms, mu, cov):
         self.n = nsamples
         self.k = narms
-        self.means = means
-        self.vars = vars
+        self.mu = mu
+        self.cov = cov
         if self.verify_inputs() is False:
             raise ValueError("Incorrect inputs.")
 
     def verify_inputs(self):
-        if len(self.means) != self.k or len(self.vars) != self.k:
+        if len(self.mu) != self.k or len(self.cov) != self.k:
             return False
         if self.n % self.k != 0:
             return False
@@ -21,21 +21,24 @@ class DGP(object):
     def get_potentials(self):
         Y = np.zeros((self.n, self.k))
         for i in range(self.k):
-            Y[:,i] = np.random.normal(self.means[i], self.vars[i], size=self.n)
+            Y[:, i] = np.random.normal(self.mu[i], self.cov[i], size=self.n)
+
         return Y
 
     def get_treatment(self):
-        Z = []
+        T = []
         for i in range(self.k):
-            Z += [i]*int(self.n/self.k)
-        Z = np.array(Z)
-        np.random.shuffle(Z)
-        return Z
+            T += [i] * int(self.n / self.k)
+        T = np.array(T)
+        np.random.shuffle(T)
+
+        return T
 
     def get_data(self):
         Yp = self.get_potentials()
-        Z = self.get_treatment()
+        T = self.get_treatment()
         Y = np.zeros(self.n)
         for i in range(self.k):
-            Y[Z==i] = Yp[Z==i,i]
-        return Y, Z
+            Y[T == i] = Yp[T == i, i]
+
+        return Y, T

@@ -1,110 +1,118 @@
 from functools import partial
 from tools.helper import ptrn2
-from params.params import X, sigma, ndraws, tol
+from params.params import tol
 import numpy as np
 
-# generate data
-Y = X  # replicate the vector of estimates
-k = len(X)  # number of treatment arms
-sigma = np.kron(np.array([[1, 1], [1, 1]]), sigma)  # replicate the covariance matrix
 
-# compute variables
-theta_tilde = np.argmax(X)  # index of the winning arm
-ytilde = Y[theta_tilde]  # estimate associated with the winning arm
-sigmaytilde = sigma[k + theta_tilde, k + theta_tilde]  # variance of all the estimates
-sigmaxytilde = sigma[theta_tilde, (k + theta_tilde)]  # variance of the winning arm
-sigmaxytilde_vec = np.array(sigma[(k + theta_tilde), 0:k])  # covariance of the winning arm and other arms
-ztilde = np.array(X) - (sigma[(k + theta_tilde), 0:k]) / sigmaytilde * ytilde  # normalised difference
+class WINNERS(object):
 
+    def __init__(self, Y, sigma):
+        self.Y = Y
+        self.sigma = sigma
+        self.k = len(Y)
 
-def get_truncation():
-    """ Get the truncation threshold for the truncated normal distribution
-    :return:
-    """
+        # index of the winning arm
+        self.theta_tilde = np.argmax(self.Y)
+        # estimate associated with the winning arm
+        self.ytilde = Y[self.theta_tilde]
+        # variance of all the estimates
+        self.sigmaytilde = self.sigma[self.theta_tilde, self.theta_tilde]
+        # covariance of the winning arm and other arms
+        self.sigmaytilde_vec = np.array(self.sigma[self.theta_tilde, 0: self.k])
+        # normalised difference
+        self.ztilde = np.array(Y) - (self.sigma[self.theta_tilde, 0: self.k]) / self.sigmaytilde * self.ytilde
 
-    # The lower truncation value
-    ind_l = sigmaxytilde > sigmaxytilde_vec
-    if sum(ind_l) == 0:
-        ltilde = -np.inf
-    elif sum(ind_l) > 0:
-        ltilde = max(sigmaytilde * (ztilde[ind_l] - ztilde[theta_tilde]) / (sigmaxytilde - sigmaxytilde_vec[ind_l]))
-    else:
-        raise ValueError("Invalid ind_l value")
+    def get_truncation(self):
+        """ Get the truncation threshold for the truncated normal distribution
+        :return:
+        """
 
-    # The upper truncation value
-    ind_u = sigmaxytilde < sigmaxytilde_vec
-    if sum(ind_u) == 0:
-        utilde = +np.inf
-    elif sum(ind_u) > 0:
-        utilde = min(sigmaytilde * (ztilde[ind_u] - ztilde[theta_tilde]) / (sigmaxytilde - sigmaxytilde_vec[ind_u]))
-    else:
-        raise ValueError("Invalid ind_u value")
+        # The lower truncation value
+        ind_l = self.sigmaytilde > self.sigmaytilde_vec
+        if sum(ind_l) == 0:
+            ltilde = -np.inf
+        elif sum(ind_l) > 0:
+            ltilde = max(self.sigmaytilde * (self.ztilde[ind_l] - self.ztilde[self.theta_tilde]) /
+                         (self.sigmaytilde - self.sigmaytilde_vec[ind_l]))
+        else:
+            raise ValueError("Invalid ind_l value")
 
-    # The V truncation value
-    ind_v = (sigmaxytilde_vec == sigmaxytilde)
-    if sum(ind_v) == 0:
-        vtilde = 0
-    elif sum(ind_v) > 0:
-        vtilde = min(-(ztilde[ind_v] - ztilde[theta_tilde]))
-    else:
-        raise ValueError("Invalid ind_v value")
+        # The upper truncation value
+        ind_u = self.sigmaytilde < self.sigmaytilde_vec
+        if sum(ind_u) == 0:
+            utilde = +np.inf
+        elif sum(ind_u) > 0:
+            utilde = min(self.sigmaytilde * (self.ztilde[ind_u] - self.ztilde[self.theta_tilde]) /
+                         (self.sigmaytilde - self.sigmaytilde_vec[ind_u]))
+        else:
+            raise ValueError("Invalid ind_u value")
 
-    if vtilde < 0:
-        return None
+        # The V truncation value
+        ind_v = (self.sigmaytilde_vec == self.sigmaytilde)
+        if sum(ind_v) == 0:
+            vtilde = 0
+        elif sum(ind_v) > 0:
+            vtilde = min(-(self.ztilde[ind_v] - self.ztilde[self.theta_tilde]))
+        else:
+            raise ValueError("Invalid ind_v value")
 
-    return ltilde, utilde
+        if vtilde < 0:
+            return None
 
+        return ltilde, utilde
 
-def search_mu(ltilde, utilde, size):
-    """ Get median estimate via bisection search algorithm
-    :param ltilde: the lower truncation value
-    :param utilde: the upper truncation value
-    :param size: quantile to find inverse
-    :return:
-    """
+    def search_mu(self, ltilde, utilde, alpha):
+        pass
 
-    yhat = ytilde
-    sigmayhat = sigmaytilde
-    k = len(X)
+    def search_mu_(self, ltilde, utilde, alpha):
+        """ Get median estimate via bisection search algorithm
+        :param ltilde: the lower truncation value
+        :param utilde: the upper truncation value
+        :param alpha: quantile to find inverse
+        :return:
+        """
 
-    # initialize loop
-    check_uniroot = False
-    while check_uniroot is False:
-        scale = k
-        mugridsl = yhat - scale * np.sqrt(sigmayhat)
-        mugridsu = yhat + scale * np.sqrt(sigmayhat)
-        mugrids = np.array([np.float(mugridsl), np.float(mugridsu)])
-        ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=ndraws)
-        intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - size)
+        yhat = self.ytilde
+        sigmayhat = self.sigmaytilde
+        k = self.k
 
-        halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
-        if halt_condition is True:
-            check_uniroot = True
-        if halt_condition is False:
-            k = 2 * k
+        # initialize loop
+        check_uniroot = False
+        while check_uniroot is False:
+            scale = k
+            mugridsl = yhat - scale * np.sqrt(sigmayhat)
+            mugridsu = yhat + scale * np.sqrt(sigmayhat)
+            mugrids = np.array([np.float(mugridsl), np.float(mugridsu)])
+            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
+            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
+            halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
+            if halt_condition is True:
+                check_uniroot = True
+            if halt_condition is False:
+                k = 2 * k
 
-    # initialize loop
-    mugrids = np.array([0] * 3)
-    halt_condition = False
-    while halt_condition is False:
-        mugridsm = (mugridsl + mugridsu) / 2
-        previous_line = mugrids
-        mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
-        ptrn2_ = partial(ptrn2, Q=yhat, A=ltilde, B=utilde, SIGMA=np.sqrt(sigmayhat), N=ndraws)
-        intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - size)
+        # initialize loop
+        mugrids = np.array([0] * 3)
+        halt_condition = False
+        while halt_condition is False:
+            mugridsm = (mugridsl + mugridsu) / 2
+            previous_line = mugrids
+            mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
+            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
+            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
 
-        if max(abs(mugrids - previous_line)) == 0:
-            halt_condition = True
+            if max(abs(mugrids - previous_line)) == 0:
+                halt_condition = True
 
-        if (abs(intermediate[1]) < tol) or (abs(mugridsu - mugridsl) < tol):
-            halt_condition = True
+            if (abs(intermediate[1]) < tol) or (abs(mugridsu - mugridsl) < tol):
+                halt_condition = True
 
-        if np.sign(intermediate[0]) == np.sign(intermediate[1]):
-            mugridsl = mugridsm
+            if np.sign(intermediate[0]) == np.sign(intermediate[1]):
+                mugridsl = mugridsm
 
-        if np.sign(intermediate[2]) == np.sign(intermediate[1]):
-            mugridsu = mugridsm
+            if np.sign(intermediate[2]) == np.sign(intermediate[1]):
+                mugridsu = mugridsm
 
-        mu_estimate = mugridsm
+            mu_estimate = mugridsm
 
-    return mu_estimate
+        return mu_estimate
