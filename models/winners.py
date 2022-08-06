@@ -24,7 +24,8 @@ class WINNERS(object):
 
     def get_truncation(self):
         """ Get the truncation threshold for the truncated normal distribution
-        :return:
+        :return ltilde: lower truncation threshold
+        :return utilde: upper truncation threshold
         """
 
         # The lower truncation value
@@ -86,9 +87,9 @@ class WINNERS(object):
             ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
             intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
             halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
-            if halt_condition is True:
+            if halt_condition:
                 check_uniroot = True
-            if halt_condition is False:
+            else:
                 k = 2 * k
 
         # initialize loop
