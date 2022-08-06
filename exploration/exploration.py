@@ -4,22 +4,6 @@ import matplotlib.pyplot as plt
 sns.set()
 
 
-def naive(ntreat, diff):
-    """ Naive method
-    :param ntreat: number of treatment
-    :param diff: difference between winning arm and the remaining arms
-    :return:
-    """
-
-    mu = np.zeros(ntreat)
-    mu[0] = mu[0] + diff
-    cov = np.eye(ntreat)
-    Y = np.random.multivariate_normal(mu, cov, size=100000)
-    coverage = np.mean([(diff > np.max(Y, axis=1) - 1.96) & (diff < np.max(Y, axis=1) + 1.96)])
-
-    return coverage
-
-
 def plot_naive():
     """ Plot the naive method for calculating coverage rate
     :return:
