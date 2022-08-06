@@ -1,6 +1,3 @@
-from functools import partial
-from tools.func import ptrn2
-from params.params import tol
 import numpy as np
 
 
@@ -64,56 +61,3 @@ class WINNERS(object):
 
     def search_mu(self, ltilde, utilde, alpha):
         pass
-
-    def search_mu_(self, ltilde, utilde, alpha):
-        """ Get median estimate via bisection search algorithm
-        :param ltilde: the lower truncation value
-        :param utilde: the upper truncation value
-        :param alpha: quantile to find inverse
-        :return:
-        """
-
-        yhat = self.ytilde
-        sigmayhat = self.sigmaytilde
-        k = self.k
-
-        # initialize loop
-        check_uniroot = False
-        while check_uniroot is False:
-            scale = k
-            mugridsl = yhat - scale * np.sqrt(sigmayhat)
-            mugridsu = yhat + scale * np.sqrt(sigmayhat)
-            mugrids = np.array([np.float(mugridsl), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
-            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
-            halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
-            if halt_condition:
-                check_uniroot = True
-            else:
-                k = 2 * k
-
-        # initialize loop
-        mugrids = np.array([0] * 3)
-        halt_condition = False
-        while halt_condition is False:
-            mugridsm = (mugridsl + mugridsu) / 2
-            previous_line = mugrids
-            mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
-            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
-
-            if max(abs(mugrids - previous_line)) == 0:
-                halt_condition = True
-
-            if (abs(intermediate[1]) < tol) or (abs(mugridsu - mugridsl) < tol):
-                halt_condition = True
-
-            if np.sign(intermediate[0]) == np.sign(intermediate[1]):
-                mugridsl = mugridsm
-
-            if np.sign(intermediate[2]) == np.sign(intermediate[1]):
-                mugridsu = mugridsm
-
-            mu_estimate = mugridsm
-
-        return mu_estimate
