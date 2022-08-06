@@ -62,6 +62,9 @@ class WINNERS(object):
         return ltilde, utilde
 
     def search_mu(self, ltilde, utilde, alpha):
+        pass
+
+    def search_mu_(self, ltilde, utilde, alpha):
         """ Get median estimate via bisection search algorithm
         :param ltilde: the lower truncation value
         :param utilde: the upper truncation value
@@ -76,7 +79,6 @@ class WINNERS(object):
         # initialize loop
         check_uniroot = False
         while check_uniroot is False:
-            print("check_uniroot")
             scale = k
             mugridsl = yhat - scale * np.sqrt(sigmayhat)
             mugridsu = yhat + scale * np.sqrt(sigmayhat)
@@ -93,7 +95,6 @@ class WINNERS(object):
         mugrids = np.array([0] * 3)
         halt_condition = False
         while halt_condition is False:
-            print("halt_condition")
             mugridsm = (mugridsl + mugridsu) / 2
             previous_line = mugrids
             mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
