@@ -1,26 +1,14 @@
+from models.base import Base
 from scipy.stats import truncnorm
 from datetime import datetime
 import numpy as np
 np.finfo(np.double).precision = 100
 
 
-class Winners(object):
+class Winners(Base):
 
     def __init__(self, Y, sigma):
-        self.Y = Y
-        self.sigma = sigma
-        self.k = len(Y)
-
-        # index of the winning arm
-        self.theta_tilde = np.argmax(self.Y)
-        # estimate associated with the winning arm
-        self.ytilde = Y[self.theta_tilde]
-        # variance of all the estimates
-        self.sigmaytilde = self.sigma[self.theta_tilde, self.theta_tilde]
-        # covariance of the winning arm and other arms
-        self.sigmaytilde_vec = np.array(self.sigma[self.theta_tilde, 0: self.k])
-        # normalised difference
-        self.ztilde = np.array(Y) - (self.sigma[self.theta_tilde, 0: self.k]) / self.sigmaytilde * self.ytilde
+        super().__init__(Y, sigma)
 
     def get_truncation(self):
         """ Get the truncation threshold for the truncated normal distribution
@@ -29,7 +17,7 @@ class Winners(object):
         """
 
         # The lower truncation value
-        ind_l = self.sigmaytilde > self.sigmaytilde_vec
+        ind_l = np.array(self.sigmaytilde > self.sigmaytilde_vec)
         if sum(ind_l) == 0:
             ltilde = -np.inf
         elif sum(ind_l) > 0:
@@ -39,7 +27,7 @@ class Winners(object):
             raise ValueError("Invalid ind_l value")
 
         # The upper truncation value
-        ind_u = self.sigmaytilde < self.sigmaytilde_vec
+        ind_u = np.array(self.sigmaytilde < self.sigmaytilde_vec)
         if sum(ind_u) == 0:
             utilde = +np.inf
         elif sum(ind_u) > 0:
@@ -49,7 +37,7 @@ class Winners(object):
             raise ValueError("Invalid ind_u value")
 
         # The V truncation value
-        ind_v = (self.sigmaytilde_vec == self.sigmaytilde)
+        ind_v = np.array(self.sigmaytilde_vec == self.sigmaytilde)
         if sum(ind_v) == 0:
             vtilde = 0
         elif sum(ind_v) > 0:
