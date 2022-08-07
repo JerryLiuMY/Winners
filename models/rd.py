@@ -5,12 +5,13 @@ from scipy.stats import norm
 class RD(object):
 
     def __init__(self, Y, T, b, null=0):
-        self.n = len(Y)
         self.Y = Y
         self.T = T
         self.b = b
-        self.k = len(set(T))
         self.null = null
+
+        self.n = len(Y)
+        self.k = len(set(T))
         if set(T) != set(np.arange(self.k)):
             raise ValueError("Wrong T.")
 

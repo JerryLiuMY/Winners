@@ -12,3 +12,7 @@ The coverage probability with `ntreat=2, 10, 50` and difference between the winn
 
 ### Winners method
 ![alt text](./__resources__/winners.jpg?raw=true "Title")
+
+
+## Caveats
+- **Winners:** Fast computation when `mu` is known and the quantity to compute is `alpha`. Slow computation when `alpha` is known and the quantity to compute is `mu`.
