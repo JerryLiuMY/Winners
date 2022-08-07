@@ -25,7 +25,7 @@ def plot_coverage(model_name, nsample):
     coverage_arr = np.round(coverage_arr, 2)
 
     # plot coverage rate
-    fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+    fig, ax = plt.subplots(1, 1, figsize=(8, 4))
     ax.plot(coverage_arr[0, :], "o-", label="ntreat=2")
     ax.plot(coverage_arr[1, :], "v-", label="ntreat=10")
     ax.plot(coverage_arr[2, :], "*-", label="ntreat=50")
@@ -34,6 +34,6 @@ def plot_coverage(model_name, nsample):
     ax.set_xlabel("Difference")
     ax.set_ylabel("coverage probability")
     ax.set_title(f"Coverage probability of Conventional 95% CIs ({model_name})")
-    ax.legend()
+    ax.legend(loc="lower right")
 
     return fig
