@@ -7,8 +7,8 @@
 ## Coverage Probability
 The coverage probability with `ntreat=2, 10, 50` and difference between the winning arm and the remaining arms ranging from `0` to `8`.
 
-#### Naive method
+### Naive method
 ![alt text](./__resources__/naive.jpg?raw=true "Title")
 
-#### Winners method
+### Winners method
 ![alt text](./__resources__/winners.jpg?raw=true "Title")
