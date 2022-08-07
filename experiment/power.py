@@ -32,7 +32,7 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
 
         # find power
         power_li_sub = []
-        for _ in np.range(ntrials):
+        for _ in range(ntrials):
             Y, sigma = DGP(nsamples, narms, mu, cov).get_input()
             model = Model(Y, sigma)
             power_li_sub.append(model.get_power(null=null))
@@ -61,7 +61,7 @@ def plot_power(model_name, ntrials):
         for j, (nsamples, narms) in enumerate(zip(nsamples_li, narms_li)):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on difference = {diff} and number of arms = {narms}")
-            mu, cov = np.arange(narms) - (narms - 1), np.ones(narms)
+            mu, cov = np.array([diff] + [0] * (narms-1)), np.ones(narms)
             power_li = find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li)
             ax.plot(power_li, "-", label=f"narms={narms}")
 

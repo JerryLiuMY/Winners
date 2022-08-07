@@ -26,7 +26,7 @@ def find_coverage(model_name, ntrials, nsamples, narms, mu, cov):
 
     # find coverage rate
     coverage_li = []
-    for idx in np.range(ntrials):
+    for idx in range(ntrials):
         if idx % 100 == 0:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on trial {idx}")
 
@@ -60,7 +60,7 @@ def plot_coverage(model_name, ntrials):
         for j, (nsamples, narms) in enumerate(zip(nsamples_li, narms_li)):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on difference = {diff} and number of arms = {narms}")
-            mu, cov = np.arange(narms) - (narms - 1), np.ones(narms)
+            mu, cov = np.array([diff] + [0] * (narms-1)), np.ones(narms)
             coverage_arr[i, j] = find_coverage(model_name, ntrials, nsamples, narms, mu, cov)
     coverage_arr = np.round(coverage_arr, 2)
 
