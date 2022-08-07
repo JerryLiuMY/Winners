@@ -48,19 +48,19 @@ def plot_power(model_name, nsamples):
     """
 
     # define parameters
-    ntreats_li = [2, 10, 50]
     diff_li = [1, 2, 3, 4]
+    narms_li = [2, 10, 50]
 
-    # get power
+    # plot power
     fig, axes = plt.subplots(2, 2, figsize=(12, 12))
     for i, diff in enumerate(diff_li):
         ax = axes[i // 2, i % 2]
         null_li = np.linspace(diff - 5, diff + 5, 101)
-        for j, ntreat in enumerate(ntreats_li):
+        for j, narms in enumerate(narms_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-                  f"Working on difference = {diff} and number of treatment = {ntreat}")
-            power_li = find_power(model_name, nsamples, ntreat, diff, null_li)
-            ax.plot(power_li, "-", label=f"ntreat={ntreat}")
+                  f"Working on difference = {diff} and number of arms = {narms}")
+            power_li = find_power(model_name, nsamples, narms, diff, null_li)
+            ax.plot(power_li, "-", label=f"narms={narms}")
 
         ax.set_xticks([val for idx, val in enumerate(np.arange(len(null_li))) if idx % 10 == 0])
         ax.set_xticklabels([round((val - diff)) for idx, val in enumerate(null_li) if idx % 10 == 0])
