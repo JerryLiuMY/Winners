@@ -8,10 +8,10 @@ import numpy as np
 sns.set()
 
 
-def find_coverage(model_name, nsamples, narms, diff):
+def find_coverage(model_name, ntrials, narms, diff):
     """ RUn experiment
     :param model_name: Model name
-    :param nsamples: Number of samples
+    :param ntrials: Number of trials
     :param narms: number of treatment
     :param diff: difference between winning arm and the remaining arms
     :return: coverage rate
@@ -19,7 +19,7 @@ def find_coverage(model_name, nsamples, narms, diff):
 
     # generate data
     tol = 1e-5
-    Y_all, sigma = data_prep(nsamples, narms, diff)
+    Y_all, sigma = data_prep(ntrials, narms, diff)
     model_dict = {"Naive": Naive, "Winners": Winners}
     Model = model_dict[model_name]
 
@@ -41,10 +41,10 @@ def find_coverage(model_name, nsamples, narms, diff):
     return np.mean(coverage_li)
 
 
-def plot_coverage(model_name, nsamples):
+def plot_coverage(model_name, ntrials):
     """ Plot the calculated coverage rate
     :param model_name: Model name
-    :param nsamples: Number of samples
+    :param ntrials: Number of trials
     :return:
     """
 
@@ -58,7 +58,7 @@ def plot_coverage(model_name, nsamples):
         for j, narms in enumerate(narms_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on difference = {diff} and number of arms = {narms}")
-            coverage_arr[i, j] = find_coverage(model_name, nsamples, narms, diff)
+            coverage_arr[i, j] = find_coverage(model_name, ntrials, narms, diff)
     coverage_arr = np.round(coverage_arr, 2)
 
     # plot coverage rate

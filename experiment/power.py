@@ -8,10 +8,10 @@ import numpy as np
 sns.set()
 
 
-def find_power(model_name, nsamples, narms, diff, null_li):
+def find_power(model_name, ntrials, narms, diff, null_li):
     """ RUn experiment
     :param model_name: Model name
-    :param nsamples: Number of samples
+    :param ntrials: Number of trials
     :param narms: number of treatment
     :param diff: difference between winning arm and the remaining arms
     :param null_li: List of null hypothesis
@@ -19,7 +19,7 @@ def find_power(model_name, nsamples, narms, diff, null_li):
     """
 
     # generate data
-    Y_all, sigma = data_prep(nsamples, narms, diff)
+    Y_all, sigma = data_prep(ntrials, narms, diff)
     model_dict = {"Naive": Naive, "Winners": Winners}
     Model = model_dict[model_name]
 
@@ -40,10 +40,10 @@ def find_power(model_name, nsamples, narms, diff, null_li):
     return power_li
 
 
-def plot_power(model_name, nsamples):
+def plot_power(model_name, ntrials):
     """ Plot the calculated coverage rate
     :param model_name: Model name
-    :param nsamples: Number of samples
+    :param ntrials: Number of samples
     :return:
     """
 
@@ -59,7 +59,7 @@ def plot_power(model_name, nsamples):
         for j, narms in enumerate(narms_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on difference = {diff} and number of arms = {narms}")
-            power_li = find_power(model_name, nsamples, narms, diff, null_li)
+            power_li = find_power(model_name, ntrials, narms, diff, null_li)
             ax.plot(power_li, "-", label=f"narms={narms}")
 
         ax.set_xticks([val for idx, val in enumerate(np.arange(len(null_li))) if idx % 10 == 0])
