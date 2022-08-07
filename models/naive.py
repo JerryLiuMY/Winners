@@ -18,7 +18,7 @@ class Naive(Base):
 
         return mu_alpha
 
-    def find_power(self, null):
+    def get_power(self, null):
         """ Find power of the method
         :param null: null hypothesis
         :return:
