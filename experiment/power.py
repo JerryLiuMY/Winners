@@ -8,18 +8,18 @@ import numpy as np
 sns.set()
 
 
-def find_power(model_name, ntreat, diff, nsample, null_li):
+def find_power(model_name, nsamples, narms, diff, null_li):
     """ RUn experiment
     :param model_name: Model name
-    :param ntreat: number of treatment
+    :param nsamples: Number of samples
+    :param narms: number of treatment
     :param diff: difference between winning arm and the remaining arms
-    :param nsample: Number of samples
     :param null_li: List of null hypothesis
     :return: coverage rate
     """
 
     # generate data
-    Y_all, sigma = data_prep(ntreat, diff, nsample)
+    Y_all, sigma = data_prep(nsamples, narms, diff)
     model_dict = {"Naive": Naive, "Winners": Winners}
     Model = model_dict[model_name]
 
@@ -34,37 +34,37 @@ def find_power(model_name, ntreat, diff, nsample, null_li):
         power_li_sub = []
         for Y in Y_all:
             model = Model(Y, sigma)
-            power_li_sub.append(model.find_power(null=null))
+            power_li_sub.append(model.get_power(null=null))
         power_li.append(np.mean(power_li_sub))
 
     return power_li
 
 
-def plot_power(model_name, nsample):
-    """ Plot the naive method for calculating coverage rate
+def plot_power(model_name, nsamples):
+    """ Plot the calculated coverage rate
     :param model_name: Model name
-    :param nsample: Number of samples
+    :param nsamples: Number of samples
     :return:
     """
 
     # define parameters
-    diffs = np.array([1, 2, 3, 4])
-    ntreats = np.array([2, 10, 50])
+    ntreats_li = [2, 10, 50]
+    diff_li = [1, 2, 3, 4]
 
     # get power
     fig, axes = plt.subplots(2, 2, figsize=(12, 12))
-    for i, diff in enumerate(diffs):
+    for i, diff in enumerate(diff_li):
         ax = axes[i // 2, i % 2]
         null_li = np.linspace(diff - 5, diff + 5, 101)
-        for j, ntreat in enumerate(ntreats):
+        for j, ntreat in enumerate(ntreats_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on difference = {diff} and number of treatment = {ntreat}")
-            power_li = find_power(model_name, ntreat, diff, nsample, null_li)
+            power_li = find_power(model_name, nsamples, ntreat, diff, null_li)
             ax.plot(power_li, "-", label=f"ntreat={ntreat}")
 
         ax.set_xticks([val for idx, val in enumerate(np.arange(len(null_li))) if idx % 10 == 0])
         ax.set_xticklabels([round((val - diff)) for idx, val in enumerate(null_li) if idx % 10 == 0])
-        ax.set_xlabel("Null - True")
+        ax.set_xlabel("null - true")
         ax.set_ylabel("Power")
         ax.set_title(f"Power of the method for difference = {diff}")
         ax.legend(loc="lower right")
