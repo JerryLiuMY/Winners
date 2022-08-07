@@ -13,6 +13,6 @@ def data_prep(ntreat, diff):
     mu = np.zeros(ntreat)
     mu[0] = mu[0] + diff
     sigma = np.eye(ntreat)
-    Y = np.random.multivariate_normal(mu, sigma, size=100000)
+    Y_all = np.random.multivariate_normal(mu, sigma, size=100000)
 
-    return Y, sigma
+    return Y_all, sigma
