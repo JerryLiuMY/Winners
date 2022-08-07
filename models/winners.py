@@ -116,6 +116,11 @@ class Winners(Base):
         return mu_alpha
 
     def find_power(self, null):
+        """ Find power of the method
+        :param null: null hypothesis
+        :return:
+        """
+
         # define parameters
         yhat = self.ytilde
         stdytilde = np.sqrt(self.sigmaytilde)

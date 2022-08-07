@@ -24,7 +24,7 @@ def find_coverage(model_name, ntreat, diff, nsample):
     Model = model_dict[model_name]
 
     # find coverage rate
-    coverage = []
+    coverage_li = []
     for idx, Y in enumerate(Y_all):
         # logging massage
         if idx % 100 == 0:
@@ -36,9 +36,9 @@ def find_coverage(model_name, ntreat, diff, nsample):
         mu_upper = model.search_mu(alpha=1-0.025, tol=tol)
 
         # append coverage rate
-        coverage.append((diff > mu_upper) & (diff < mu_lower))
+        coverage_li.append((diff > mu_upper) & (diff < mu_lower))
 
-    return np.mean(coverage)
+    return np.mean(coverage_li)
 
 
 def plot_coverage(model_name, nsample):
@@ -57,7 +57,7 @@ def plot_coverage(model_name, nsample):
     for i, ntreat in enumerate(ntreats):
         for j, diff in enumerate(diffs):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-                  f"Working on number of treatment {ntreat} and difference {diff}")
+                  f"Working on number of treatment = {ntreat} and difference = {diff}")
             coverage_arr[i, j] = find_coverage(model_name, ntreat, diff, nsample)
     coverage_arr = np.round(coverage_arr, 2)
 
