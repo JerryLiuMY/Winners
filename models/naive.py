@@ -13,6 +13,6 @@ class Naive(Base):
         :return: mu value corresponding to the alpha
         """
 
-        mu_alpha = self.ytilde + norm.ppf(q=alpha, loc=0, scale=self.sigmaytilde)
+        mu_alpha = self.ytilde + norm.ppf(q=1-alpha, loc=0, scale=self.sigmaytilde)
 
         return mu_alpha

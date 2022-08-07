@@ -1,9 +1,9 @@
-import seaborn as sns
-import numpy as np
-from datetime import datetime
 from data_prep.data_prep import data_prep
 from models.winners import Winners
 from models.naive import Naive
+from datetime import datetime
+import seaborn as sns
+import numpy as np
 sns.set()
 
 
@@ -24,11 +24,10 @@ def experiment(model_name, ntreat, diff, nsample):
 
     # find coverage rate
     coverage = []
-    sample = 0
-    for Y in Y_all:
+    for idx, Y in enumerate(Y_all):
         # logging massage
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on sample {sample}")
-        sample = sample + 1
+        if idx % 100 == 0:
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on sample {idx}")
 
         # logging massage
         model = Model(Y, sigma)
@@ -36,6 +35,6 @@ def experiment(model_name, ntreat, diff, nsample):
         mu_upper = model.search_mu(alpha=1-0.025, tol=tol)
 
         # append coverage rate
-        coverage.append((diff > mu_lower) & (diff < mu_upper))
+        coverage.append((diff > mu_upper) & (diff < mu_lower))
 
     return np.mean(coverage)

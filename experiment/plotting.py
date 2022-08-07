@@ -18,9 +18,9 @@ def plot_coverage(model_name, nsample):
     # get coverage rate
     coverage_arr = np.empty(shape=(len(ntreats), len(diffs)))
     for i, ntreat in enumerate(ntreats):
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on number of treatment {ntreat}")
         for j, diff in enumerate(diffs):
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on difference {diff}")
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                  f"Working on number of treatment {ntreat} and difference {diff}")
             coverage_arr[i, j] = experiment(model_name, ntreat, diff, nsample)
     coverage_arr = np.round(coverage_arr, 2)
 

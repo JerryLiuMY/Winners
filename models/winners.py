@@ -63,22 +63,22 @@ class Winners(Base):
 
         # search loop
         std_temp = stdytilde
-        lower_limit = yhat + std_temp
         upper_limit = yhat - std_temp
-        lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
+        lower_limit = yhat + std_temp
         upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
-        lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
+        lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
         upper_quantile = truncnorm.cdf(x=yhat, a=upper_a, b=upper_b, loc=upper_limit, scale=stdytilde)
+        lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
 
         rloop = 1
         while not ((alpha > lower_quantile) and (alpha < upper_quantile)):
             std_temp = std_temp * 1.05
-            lower_limit = yhat + std_temp
             upper_limit = yhat - std_temp
-            lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
+            lower_limit = yhat + std_temp
             upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
-            lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
+            lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
             upper_quantile = truncnorm.cdf(x=yhat, a=upper_a, b=upper_b, loc=upper_limit, scale=stdytilde)
+            lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
             rloop += 1
 
         # print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Range loop ({rloop} iterations) [alpha={alpha}] - "
@@ -92,14 +92,14 @@ class Winners(Base):
 
         bloop = 1
         while np.abs(middle_quantile - alpha) > tol and bloop < 100:
-            if (alpha > middle_quantile) and (alpha < upper_quantile):
-                lower_limit = middle_limit
-                lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
-                lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
-            elif (alpha > lower_quantile) and (alpha < middle_quantile):
+            if (alpha > lower_quantile) and (alpha < middle_quantile):
                 upper_limit = middle_limit
                 upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
                 upper_quantile = truncnorm.cdf(x=yhat, a=upper_a, b=upper_b, loc=upper_limit, scale=stdytilde)
+            elif (alpha > middle_quantile) and (alpha < upper_quantile):
+                lower_limit = middle_limit
+                lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
+                lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
             else:
                 raise ValueError("Floating error")
 
