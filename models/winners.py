@@ -1,26 +1,14 @@
-from functools import partial
-from tools.func import ptrn2
-from params.params import tol
+from models.base import Base
+from scipy.stats import truncnorm
+from datetime import datetime
 import numpy as np
+np.finfo(np.double).precision = 100
 
 
-class WINNERS(object):
+class Winners(Base):
 
     def __init__(self, Y, sigma):
-        self.Y = Y
-        self.sigma = sigma
-        self.k = len(Y)
-
-        # index of the winning arm
-        self.theta_tilde = np.argmax(self.Y)
-        # estimate associated with the winning arm
-        self.ytilde = Y[self.theta_tilde]
-        # variance of all the estimates
-        self.sigmaytilde = self.sigma[self.theta_tilde, self.theta_tilde]
-        # covariance of the winning arm and other arms
-        self.sigmaytilde_vec = np.array(self.sigma[self.theta_tilde, 0: self.k])
-        # normalised difference
-        self.ztilde = np.array(Y) - (self.sigma[self.theta_tilde, 0: self.k]) / self.sigmaytilde * self.ytilde
+        super().__init__(Y, sigma)
 
     def get_truncation(self):
         """ Get the truncation threshold for the truncated normal distribution
@@ -29,7 +17,7 @@ class WINNERS(object):
         """
 
         # The lower truncation value
-        ind_l = self.sigmaytilde > self.sigmaytilde_vec
+        ind_l = np.array(self.sigmaytilde > self.sigmaytilde_vec)
         if sum(ind_l) == 0:
             ltilde = -np.inf
         elif sum(ind_l) > 0:
@@ -39,7 +27,7 @@ class WINNERS(object):
             raise ValueError("Invalid ind_l value")
 
         # The upper truncation value
-        ind_u = self.sigmaytilde < self.sigmaytilde_vec
+        ind_u = np.array(self.sigmaytilde < self.sigmaytilde_vec)
         if sum(ind_u) == 0:
             utilde = +np.inf
         elif sum(ind_u) > 0:
@@ -49,7 +37,7 @@ class WINNERS(object):
             raise ValueError("Invalid ind_u value")
 
         # The V truncation value
-        ind_v = (self.sigmaytilde_vec == self.sigmaytilde)
+        ind_v = np.array(self.sigmaytilde_vec == self.sigmaytilde)
         if sum(ind_v) == 0:
             vtilde = 0
         elif sum(ind_v) > 0:
@@ -62,58 +50,69 @@ class WINNERS(object):
 
         return ltilde, utilde
 
-    def search_mu(self, ltilde, utilde, alpha):
-        pass
-
-    def search_mu_(self, ltilde, utilde, alpha):
-        """ Get median estimate via bisection search algorithm
-        :param ltilde: the lower truncation value
-        :param utilde: the upper truncation value
-        :param alpha: quantile to find inverse
-        :return:
+    def search_mu(self, ltilde, utilde, alpha, tol):
+        """ search for mu for the given alpha
+        :param ltilde: lower truncation limit
+        :param utilde: upper truncation limit
+        :param alpha: alpha value
+        :param tol: tolerance
+        :return: mu value corresponding to the alpha
         """
 
         yhat = self.ytilde
-        sigmayhat = self.sigmaytilde
-        k = self.k
+        stdytilde = np.sqrt(self.sigmaytilde)
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on alpha={alpha}")
 
-        # initialize loop
-        check_uniroot = False
-        while check_uniroot is False:
-            scale = k
-            mugridsl = yhat - scale * np.sqrt(sigmayhat)
-            mugridsu = yhat + scale * np.sqrt(sigmayhat)
-            mugrids = np.array([np.float(mugridsl), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
-            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
-            halt_condition = abs(max(np.sign(intermediate)) - min(np.sign(intermediate))) > tol
-            if halt_condition:
-                check_uniroot = True
+        # search loop
+        std_temp = stdytilde
+        lower_limit = yhat + std_temp
+        upper_limit = yhat - std_temp
+        lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
+        upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
+        lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
+        upper_quantile = truncnorm.cdf(x=yhat, a=upper_a, b=upper_b, loc=upper_limit, scale=stdytilde)
+
+        range_loop = 1
+        while not ((alpha > lower_quantile) and (alpha < upper_quantile)):
+            std_temp = std_temp * 1.05
+            lower_limit = yhat + std_temp
+            upper_limit = yhat - std_temp
+            lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
+            upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
+            lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
+            upper_quantile = truncnorm.cdf(x=yhat, a=upper_a, b=upper_b, loc=upper_limit, scale=stdytilde)
+            range_loop += 1
+
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Range loop ({range_loop} iterations) -- "
+              f"lower_limit = {round(lower_limit, 2)} (q={round(lower_quantile, 3)}) and "
+              f"upper_limit = {round(upper_limit, 2)} (q={round(upper_quantile, 3)})")
+
+        # bisection loop
+        middle_limit = (lower_limit + upper_limit) / 2
+        middle_a, middle_b = (ltilde - middle_limit) / stdytilde, (utilde - middle_limit) / stdytilde
+        middle_quantile = truncnorm.cdf(x=yhat, a=middle_a, b=middle_b, loc=middle_limit, scale=stdytilde)
+
+        bisection_loop = 1
+        while np.abs(middle_quantile - alpha) > tol and bisection_loop < 100:
+            if (alpha > middle_quantile) and (alpha < upper_quantile):
+                lower_limit = middle_limit
+                lower_a, lower_b = (ltilde - lower_limit) / stdytilde, (utilde - lower_limit) / stdytilde
+                lower_quantile = truncnorm.cdf(x=yhat, a=lower_a, b=lower_b, loc=lower_limit, scale=stdytilde)
+            elif (alpha > lower_quantile) and (alpha < middle_quantile):
+                upper_limit = middle_limit
+                upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
+                upper_quantile = truncnorm.cdf(x=yhat, a=upper_a, b=upper_b, loc=upper_limit, scale=stdytilde)
             else:
-                k = 2 * k
+                raise ValueError("Floating error")
 
-        # initialize loop
-        mugrids = np.array([0] * 3)
-        halt_condition = False
-        while halt_condition is False:
-            mugridsm = (mugridsl + mugridsu) / 2
-            previous_line = mugrids
-            mugrids = np.array([np.float(mugridsl), np.float(mugridsm), np.float(mugridsu)])
-            ptrn2_ = partial(ptrn2, y=yhat, ltilde=ltilde, utilde=utilde, std=np.sqrt(sigmayhat), N=1)
-            intermediate = np.array(list(map(ptrn2_, mugrids))) - (1 - alpha)
+            middle_limit = (lower_limit + upper_limit) / 2
+            middle_a, middle_b = (ltilde - middle_limit) / stdytilde, (utilde - middle_limit) / stdytilde
+            middle_quantile = truncnorm.cdf(x=yhat, a=middle_a, b=middle_b, loc=middle_limit, scale=stdytilde)
+            bisection_loop += 1
 
-            if max(abs(mugrids - previous_line)) == 0:
-                halt_condition = True
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Bisection loop ({bisection_loop} iterations) -- "
+              f"middle_limit = {round(middle_limit, 2)} (q={round(middle_quantile, 3)})\n")
 
-            if (abs(intermediate[1]) < tol) or (abs(mugridsu - mugridsl) < tol):
-                halt_condition = True
+        mu_alpha = middle_limit
 
-            if np.sign(intermediate[0]) == np.sign(intermediate[1]):
-                mugridsl = mugridsm
-
-            if np.sign(intermediate[2]) == np.sign(intermediate[1]):
-                mugridsu = mugridsm
-
-            mu_estimate = mugridsm
-
-        return mu_estimate
+        return mu_alpha

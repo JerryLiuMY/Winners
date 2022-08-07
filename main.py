@@ -1,22 +1,34 @@
 import numpy as np
-from models.winners import WINNERS
-from tqdm import tqdm
+from models.winners import Winners
+from data_prep.data_prep import data_prep
 
-# define mean and covariance
-mu = 4 * np.ones(10)
-mu[0] = mu[0] + 1
-sigma = np.eye(10)
 
-# generate samples
-Y_all = np.random.multivariate_normal(mu, sigma, size=100)
+def experiment(ntreat, diff):
+    """ RUn experiment
+    :param ntreat: number of treatment
+    :param diff: difference between winning arm and the remaining arms
+    :return: coverage rate
+    """
 
-# find coverage rate
-coverage = []
-for Y in tqdm(Y_all):
-    winners = WINNERS(Y, sigma)
-    ltilde, utilde = winners.get_truncation()
-    mu_lower = winners.search_mu(ltilde, utilde, 0.025)
-    mu_upper = winners.search_mu(ltilde, utilde, 1 - 0.025)
-    coverage.append((mu[0] > mu_lower) & (mu[0] < mu_upper))
+    # generate data
+    tol = 1e-5
+    Y_all, sigma = data_prep(ntreat, diff)
 
-coverage_rate = np.mean(coverage)
+    # find coverage rate
+    coverage = []
+    sample = 0
+    for Y in Y_all:
+        # logging massage
+        print(f"Working on sample {sample}")
+        sample = sample + 1
+
+        # logging massage
+        winners = Winners(Y, sigma)
+        ltilde, utilde = winners.get_truncation()
+        mu_lower = winners.search_mu(ltilde, utilde, alpha=1-0.025, tol=tol)
+        mu_upper = winners.search_mu(ltilde, utilde, alpha=0.025, tol=tol)
+
+        # append coverage rate
+        coverage.append((diff > mu_lower) & (diff < mu_upper))
+
+    return np.mean(coverage)
