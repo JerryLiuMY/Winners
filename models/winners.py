@@ -114,3 +114,20 @@ class Winners(Base):
         mu_alpha = middle_limit
 
         return mu_alpha
+
+    def find_power(self, null):
+        """ Find power of the method
+        :param null: null hypothesis
+        :return:
+        """
+
+        # define parameters
+        yhat = self.ytilde
+        stdytilde = np.sqrt(self.sigmaytilde)
+        ltilde, utilde = self.get_truncation()
+
+        # find power
+        a, b = (ltilde - null) / stdytilde, (utilde - null) / stdytilde
+        power = np.abs(1 - 2 * truncnorm.cdf(x=yhat, a=a, b=b, loc=null, scale=stdytilde))
+
+        return power
