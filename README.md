@@ -16,10 +16,10 @@ The coverage probability with `ntreat=2, 10, 50` and difference between the winn
 
 ## Power
 ### Naive method
-![alt text](./__resources__/naive_pow.jpg?raw=true "Title")
+![alt text](./__resources__/naive_power.jpg?raw=true "Title")
 
 ### Winners method
-![alt text](./__resources__/winners_pow.jpg?raw=true "Title")
+![alt text](./__resources__/winners_power.jpg?raw=true "Title")
 
 ## Caveats
 - **Winners:** Fast computation when `mu` is known and the quantity to compute is `alpha`. Slow computation when `alpha` is known and the quantity to compute is `mu`.
