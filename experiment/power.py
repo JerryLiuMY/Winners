@@ -27,7 +27,7 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
     # find coverage rate
     power_li = []
     for idx, null in enumerate(null_li):
-        if idx % 100 == 0:
+        if idx % 5 == 0:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on null hypothesis {idx}")
 
         # find power
@@ -51,7 +51,7 @@ def plot_power(model_name, ntrials):
     # define parameters
     diff_li = [1, 2, 3, 4]
     narms_li = [2, 10, 50]
-    nsamples_li = [_ * 50 for _ in narms_li]
+    nsamples_li = [_ * 1 for _ in narms_li]
 
     # plot power
     fig, axes = plt.subplots(2, 2, figsize=(12, 12))
