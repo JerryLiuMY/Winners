@@ -17,7 +17,7 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
     :param mu: mean of the data generation
     :param cov: covariance of the data generation
     :param null_li: List of null hypothesis
-    :return: coverage rate
+    :return: power
     """
 
     # define parameters

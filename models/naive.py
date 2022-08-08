@@ -14,7 +14,8 @@ class Naive(Base):
         :return: mu value corresponding to the alpha
         """
 
-        mu_alpha = self.ytilde + norm.ppf(q=1-alpha, loc=0, scale=self.sigmaytilde)
+        stdytilde = np.sqrt(self.sigmaytilde)
+        mu_alpha = self.ytilde + norm.ppf(q=1-alpha, loc=0, scale=stdytilde)
 
         return mu_alpha
 
@@ -24,6 +25,7 @@ class Naive(Base):
         :return:
         """
 
-        power = np.abs(1 - 2 * norm.cdf(self.ytilde, loc=null, scale=self.sigmaytilde))
+        stdytilde = np.sqrt(self.sigmaytilde)
+        power = np.abs(1 - 2 * norm.cdf(self.ytilde, loc=null, scale=stdytilde))
 
         return power

@@ -1,7 +1,6 @@
 from models.base import Base
 from scipy.stats import truncnorm
 import numpy as np
-np.finfo(np.double).precision = 100
 
 
 class Winners(Base):
@@ -91,7 +90,7 @@ class Winners(Base):
         middle_quantile = truncnorm.cdf(x=yhat, a=middle_a, b=middle_b, loc=middle_limit, scale=stdytilde)
 
         bloop = 1
-        while np.abs(middle_quantile - alpha) > tol and bloop < 100:
+        while np.abs(middle_quantile - alpha) > tol and bloop < 200:
             if (alpha > lower_quantile) and (alpha < middle_quantile):
                 upper_limit = middle_limit
                 upper_a, upper_b = (ltilde - upper_limit) / stdytilde, (utilde - upper_limit) / stdytilde
