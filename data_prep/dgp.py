@@ -42,3 +42,10 @@ class DGP(object):
             Y[T == i] = Yp[T == i, i]
 
         return Y, T
+
+    def get_input(self):
+        Y, T = self.get_data()
+        Y = np.array([np.mean(Y[T == t]) for t in sorted(set(T))])
+        sigma = np.diag(self.cov / (self.n // self.k))
+
+        return Y, sigma
