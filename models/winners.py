@@ -5,8 +5,8 @@ import numpy as np
 
 class Winners(Base):
 
-    def __init__(self, Y, sigma):
-        super().__init__(Y, sigma)
+    def __init__(self, Y_mu, sigma):
+        super().__init__(Y_mu, sigma)
 
     def get_truncation(self):
         """ Get the truncation threshold for the truncated normal distribution
@@ -114,8 +114,8 @@ class Winners(Base):
 
         return mu_alpha
 
-    def get_power(self, null):
-        """ Find power of the method
+    def get_test(self, null):
+        """ Hypothesis test for the method
         :param null: null hypothesis
         :return:
         """
@@ -125,8 +125,8 @@ class Winners(Base):
         stdytilde = np.sqrt(self.sigmaytilde)
         ltilde, utilde = self.get_truncation()
 
-        # find power
+        # find pvalue
         a, b = (ltilde - null) / stdytilde, (utilde - null) / stdytilde
-        power = np.abs(1 - 2 * truncnorm.cdf(x=yhat, a=a, b=b, loc=null, scale=stdytilde))
+        pval = 1 - np.abs(1 - 2 * truncnorm.cdf(x=yhat, a=a, b=b, loc=null, scale=stdytilde))
 
-        return power
+        return pval

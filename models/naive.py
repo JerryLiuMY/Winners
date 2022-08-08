@@ -5,8 +5,8 @@ import numpy as np
 
 class Naive(Base):
 
-    def __init__(self, Y, sigma):
-        super().__init__(Y, sigma)
+    def __init__(self, Y_mu, sigma):
+        super().__init__(Y_mu, sigma)
 
     def search_mu(self, alpha, *args, **kwargs):
         """ Search for mu given an alpha value
@@ -19,13 +19,16 @@ class Naive(Base):
 
         return mu_alpha
 
-    def get_power(self, null):
-        """ Find power of the method
+    def get_test(self, null):
+        """ Hypothesis test for the method
         :param null: null hypothesis
         :return:
         """
 
+        # define parameters
         stdytilde = np.sqrt(self.sigmaytilde)
-        power = np.abs(1 - 2 * norm.cdf(self.ytilde, loc=null, scale=stdytilde))
 
-        return power
+        # find pvalue
+        pval = 1 - np.abs(1 - 2 * norm.cdf(self.ytilde, loc=null, scale=stdytilde))
+
+        return pval

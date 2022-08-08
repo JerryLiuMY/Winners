@@ -35,7 +35,7 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
         for _ in range(ntrials):
             Y, sigma = DGP(nsamples, narms, mu, cov).get_input()
             model = Model(Y, sigma)
-            power_li_sub.append(model.get_power(null=null))
+            power_li_sub.append(model.get_test(null=null))
         power_li.append(np.mean(power_li_sub))
 
     return power_li
