@@ -83,4 +83,4 @@ def run_simulation(ntrials):
 
 
 if __name__ == "__main__":
-    run_power(model_name="Winners", ntrials=1000)
+    run_power(model_name="RD", ntrials=1000)

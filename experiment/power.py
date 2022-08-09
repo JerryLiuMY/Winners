@@ -25,7 +25,7 @@ def find_power(model_name, ntrials, narms, nsamples, mu, cov, **kwargs):
     Model = model_dict[model_name]
 
     # find power
-    pvals = []
+    pvals_method = []
     for _ in range(ntrials):
         Y, T = DGP(narms, nsamples, mu, cov).get_data()
         Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
@@ -36,9 +36,9 @@ def find_power(model_name, ntrials, narms, nsamples, mu, cov, **kwargs):
         else:
             model = Model(Y_mu, sigma)
             pval = model.get_test(null=0)
-        pvals.append(pval)
+        pvals_method.append(pval)
 
-    power = np.mean(np.array(pvals) <= 0.05)
+    power = np.mean(np.array(pvals_method) <= 0.05)
 
     return power
 
@@ -60,7 +60,10 @@ def plot_power(model_name, ntrials, narms_li, nsamples_li, mu_max_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on number of arms = {narms} and mu_max = {round(mu_max, 2)} ")
             mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)
-            power_arr[i, j] = find_power(model_name, ntrials, narms, nsamples, mu, cov)
+            if model_name == "RD":
+                power_arr[i, j] = find_power(model_name, ntrials, narms, nsamples, mu, cov, ntests=5, ntrans=500)
+            else:
+                power_arr[i, j] = find_power(model_name, ntrials, narms, nsamples, mu, cov)
     power_arr = np.round(power_arr, 2)
 
     # plot power
