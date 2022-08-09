@@ -31,11 +31,11 @@ For the RD method `ntests_li = 5` and `ntrans = 500`.
 ### Comparison
 <a href="./__results__/simulation" target="_blank">Comparision</a> of power between different methods with `ntrials=1000`, `narms=5`, `nsamples=5000`, `mu = (np.arange(narms) - 3) / 10`, `cov = np.ones(narms)`. For the RD method `ntests_li = [1, 2, 3, 4, 5, 10, 20]` and `ntrans = 500`.
 
-|                | ntests=1, ntrans=500 | ntests=2, ntrans=500 | ntests=3, ntrans=500 | ntests=4, ntrans=500 | ntests=5, ntrans=500 | ntests=10, ntrans=500 | ntests=20, ntrans=500 |
-|----------------|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:---------------------:|:---------------------:|
-| Naive Method   |        0.264%        |        0.159%        |        0.423%        |        0.309%        |        0.106%        |        0.416%         |        -0.001%        |
-| Winners Method |         1.72         |         1.26         |        11.01         |         2.12         |         1.06         |         8.68          |         0.07          |
-| RD Method      |        66.6%         |        70.5%         |        68.6%         |        65.9%         |        68.7%         |         67.3%         |           /           |
+|             | ntests=1, ntrans=500 | ntests=2, ntrans=500 | ntests=3, ntrans=500 | ntests=4, ntrans=500 | ntests=5, ntrans=500 | ntests=10, ntrans=500 | ntests=20, ntrans=500 |
+|-------------|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:---------------------:|:---------------------:|
+| **Naive**   |        0.897         |        0.876         |        0.885         |        0.884         |        0.906         |        0.416%         |        -0.001%        |
+| **Winners** |        0.792         |        0.759         |        0.789         |        0.772         |        0.813         |         8.68          |         0.07          |
+| **RD**      |        0.466         |        0.548         |        0.603         |        0.581         |        0.608         |         67.3%         |           /           |
 
 ## Caveats
 - **Winners:** Fast computation when `mu` is known and the quantity to compute is `alpha`. Slow computation when `alpha` is known and the quantity to compute is `mu`.
