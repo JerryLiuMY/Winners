@@ -36,7 +36,7 @@ def run_power(model_name, ntrials):
 
     # define parameters
     narms_li = [2, 10, 50]
-    nsamples_li = [_ * 50 for _ in narms_li]
+    nsamples_li = [_ * 1000 for _ in narms_li]
     mu_max_li = list(np.arange(0, 4 + 0.1, 0.1))
     power_path = os.path.join(results_path, "power")
     if not os.path.isdir(power_path):
@@ -55,15 +55,15 @@ def run_simulation(ntrials):
 
     # define parameters
     narms, nsamples = 5, 5000
-    mu = (np.arange(narms) - 3) / 10
-    cov = np.ones(narms)
-    ntests_li = [1, 2, 3, 4, 5, 10, 20]
+    mu, cov = (np.arange(narms) - 3) / 10, np.ones(narms)
+    ntests_li = [1, 2, 3, 4, 5, 10, 20, 30, 50, 100]
     ntrans = 500
+    simulation_path = os.path.join(results_path, "simulation")
 
     # perform test
     for ntests in ntests_li:
         # define paths
-        ntests_path = os.path.join(results_path, f"ntests_{ntests}_ntrans_{ntrans}")
+        ntests_path = os.path.join(simulation_path, f"ntests_{ntests}_ntrans_{ntrans}")
         if not os.path.isdir(ntests_path):
             os.mkdir(ntests_path)
 
@@ -83,4 +83,4 @@ def run_simulation(ntrials):
 
 
 if __name__ == "__main__":
-    run_power("Winners", ntrials=1000)
+    run_simulation(ntrials=1000)
