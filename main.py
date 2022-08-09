@@ -55,9 +55,8 @@ def run_simulation(ntrials):
 
     # define parameters
     narms, nsamples = 5, 5000
-    mu = (np.arange(narms) - 3) / 10
-    cov = np.ones(narms)
-    ntests_li = [30, 50, 100]  # [1, 2, 3, 4, 5, 10, 20, 30, 50, 100]
+    mu, cov = (np.arange(narms) - 3) / 10, np.ones(narms)
+    ntests_li = [1, 2, 3, 4, 5, 10, 20, 30, 50, 100]
     ntrans = 500
     simulation_path = os.path.join(results_path, "simulation")
 
