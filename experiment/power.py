@@ -1,3 +1,5 @@
+from joblib import Parallel, delayed
+import multiprocessing
 from matplotlib import pyplot as plt
 from data_prep.dgp import DGP
 from models.winners import Winners
@@ -20,28 +22,38 @@ def find_power(model_name, ntrials, narms, nsamples, mu, cov, **kwargs):
     :return: power
     """
 
-    # define parameters
+    # find power
+    num_cores = multiprocessing.cpu_count()
+    parallel = Parallel(n_jobs=num_cores)
+    pvals = parallel(delayed(power_process)(model_name, narms, nsamples, mu, cov, **kwargs) for _ in range(ntrials))
+    power = np.mean(np.array(pvals) <= 0.05)
+
+    return power
+
+
+def power_process(model_name, narms, nsamples, mu, cov, **kwargs):
+    """ Single process of finding power
+    :param model_name: model name
+    :param nsamples: number of samples
+    :param narms: number of treatment
+    :param mu: mean of the data generation
+    :param cov: covariance of the data generation
+    """
+
     model_dict = {"Naive": Naive, "Winners": Winners, "RD": RD}
     Model = model_dict[model_name]
 
-    # find power
-    pvals_method = []
-    for trail in range(ntrials):
-        Y, T = DGP(narms, nsamples, mu, cov).get_data()
-        Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
-        if model_name == "RD":
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on trail = {trail}")
-            ntests, ntrans = kwargs["ntests"], kwargs["ntrans"]
-            model = Model(Y, T, b=int(len(T) / 2), null=0)
-            pval = model.multiple_test(ntests, ntrans)
-        else:
-            model = Model(Y_mu, sigma)
-            pval = model.get_test(null=0)
-        pvals_method.append(pval)
+    Y, T = DGP(narms, nsamples, mu, cov).get_data()
+    Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
+    if model_name == "RD":
+        ntests, ntrans = kwargs["ntests"], kwargs["ntrans"]
+        model = Model(Y, T, b=int(len(T) / 2), null=0)
+        pval = model.multiple_test(ntests, ntrans)
+    else:
+        model = Model(Y_mu, sigma)
+        pval = model.get_test(null=0)
 
-    power = np.mean(np.array(pvals_method) <= 0.05)
-
-    return power
+    return pval
 
 
 def plot_power(model_name, ntrials, narms_li, nsamples_li, mu_max_li):

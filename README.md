@@ -33,9 +33,9 @@ For the RD method `ntests_li = 5` and `ntrans = 500`.
 
 |             | ntests=1, ntrans=500 | ntests=2, ntrans=500 | ntests=3, ntrans=500 | ntests=4, ntrans=500 | ntests=5, ntrans=500 | ntests=10, ntrans=500 | ntests=20, ntrans=500 |
 |-------------|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:---------------------:|:---------------------:|
-| **Naive**   |        0.897         |        0.876         |        0.885         |        0.884         |        0.906         |        0.416%         |        -0.001%        |
-| **Winners** |        0.792         |        0.759         |        0.789         |        0.772         |        0.813         |         8.68          |         0.07          |
-| **RD**      |        0.466         |        0.548         |        0.603         |        0.581         |        0.608         |         67.3%         |           /           |
+| **Naive**   |        0.897         |        0.876         |        0.885         |        0.884         |        0.906         |         0.899         |        -0.001%        |
+| **Winners** |        0.792         |        0.759         |        0.789         |        0.772         |        0.813         |         0.800         |         0.07          |
+| **RD**      |        0.466         |        0.548         |        0.603         |        0.581         |        0.608         |         0.656         |           /           |
 
 ## Caveats
 - **Winners:** Fast computation when `mu` is known and the quantity to compute is `alpha`. Slow computation when `alpha` is known and the quantity to compute is `mu`.
