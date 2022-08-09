@@ -4,7 +4,7 @@ from experiment.power import plot_power
 from experiment.coverage import plot_coverage
 import os
 import json
-results_path = "./results"
+results_path = "./__results__"
 
 
 def run_coverage(model_name, ntrials):
