@@ -83,4 +83,4 @@ def run_simulation(ntrials):
 
 
 if __name__ == "__main__":
-    run_simulation(ntrials=1000)
+    run_power("Naive", ntrials=1000)

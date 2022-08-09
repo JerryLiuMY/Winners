@@ -40,11 +40,15 @@ def power_process(model_name, narms, nsamples, mu, cov, **kwargs):
     :param cov: covariance of the data generation
     """
 
+    # define parameters
     model_dict = {"Naive": Naive, "Winners": Winners, "RD": RD}
     Model = model_dict[model_name]
 
+    # generate data
     Y, T = DGP(narms, nsamples, mu, cov).get_data()
     Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
+
+    # find pval
     if model_name == "RD":
         ntests, ntrans = kwargs["ntests"], kwargs["ntrans"]
         model = Model(Y, T, b=int(len(T) / 2), null=0)
