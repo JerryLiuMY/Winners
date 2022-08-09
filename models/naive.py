@@ -26,9 +26,10 @@ class Naive(Base):
         """
 
         # define parameters
+        yhat = self.ytilde
         stdytilde = np.sqrt(self.sigmaytilde)
 
         # find pvalue
-        pval = 1 - np.abs(1 - 2 * norm.cdf(self.ytilde, loc=null, scale=stdytilde))
+        pval = 1 - np.abs(1 - 2 * norm.cdf(x=yhat, loc=null, scale=stdytilde))
 
         return pval
