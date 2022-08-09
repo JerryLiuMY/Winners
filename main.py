@@ -1,34 +1,33 @@
-from joblib import Parallel, delayed
+from experiment.simulation import simulation
 import multiprocessing
-import numpy as np
-from data_prep.dgp import DGP
-from models.rd import RD
+import os
+import json
 num_cores = multiprocessing.cpu_count()
 print("num_cores={}".format(num_cores))
 
 
-def simulation(ntrials, sample_size, ntests, ntrans):
-    def process():
-        dgp = DGP(sample_size, 5, np.arange(5) - 4, np.ones(5))
-        Y, Z = dgp.get_data()
-        rd = RD(Y, Z, int(len(Z) / 2))
-        pvalue = rd.multiple_test(ntests, ntrans)
+def main():
+    # define parameters
+    ntrials, nsamples = 500, 5000
+    ntrans = 500
+    ntests_li = [1, 2, 3, 4, 5, 10, 20]
+    path = "./results"
 
-        return pvalue
+    # perform test
+    for ntests in ntests_li:
 
-    pvalues = Parallel(n_jobs=num_cores)(delayed(process)() for _ in range(ntrials))
-    pvalues = np.array(pvalues)
+        # define path
+        ntests_path = os.path.join(path, str(ntests))
+        os.mkdir(ntests_path)
 
-    return pvalues
+        # save params
+        params_dict = {"ntrials": ntrials, "nsamples": nsamples, "ntests": ntests, "ntrans": ntrans}
+        with open(os.path.join(ntests_path, "params.json"), "w") as f:
+            json.dump(params_dict, f)
 
-
-ntrials = 500
-sample_size = 5000
-ntrans = 500
-num_tests = [1, 2, 3, 4, 5, 10, 20]
-for ntests in num_tests:
-    pvalues = simulation(ntrials, sample_size, ntests, ntrans)
-    reject_prob = np.mean(pvalues <= 0.05)
-    with open("output_small.txt", "a") as f:
-        print(f"estimated mu, ntrials={ntrials}, sample size={sample_size}, ntests={ntests}, ntrans={ntrans}: ",
-              reject_prob, file=f)
+        # save results
+        rprobs = simulation(ntrials, nsamples, ntests, ntrans)
+        rprob_naive, rprob_winners, rprob_rd = rprobs
+        rprobs_dict = {"rprob_naive": rprob_naive, "rprob_winners": rprob_winners, "rprob_rd": rprob_rd}
+        with open(os.path.join(ntests_path, "rprobs.json"), "w") as f:
+            json.dump(rprobs_dict, f)

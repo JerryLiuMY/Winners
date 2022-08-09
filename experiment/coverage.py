@@ -50,29 +50,29 @@ def plot_coverage(model_name, ntrials):
     """
 
     # define parameters
-    diff_li = list(np.arange(0, 8 + 0.5, 0.5))
     narms_li = [2, 10, 50]
     nsamples_li = [_ * 50 for _ in narms_li]
+    mu_max_li = list(np.arange(0, 8 + 0.5, 0.5))
 
     # get coverage rate
-    coverage_arr = np.empty(shape=(len(diff_li), len(narms_li)))
-    for i, diff in enumerate(diff_li):
-        for j, (nsamples, narms) in enumerate(zip(nsamples_li, narms_li)):
+    coverage_arr = np.empty(shape=(len(narms_li), len(mu_max_li)))
+    for i, (nsamples, narms) in enumerate(zip(nsamples_li, narms_li)):
+        for j, mu_max in enumerate(mu_max_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-                  f"Working on difference = {diff} and number of arms = {narms}")
-            mu, cov = np.array([diff] + [0] * (narms-1)), np.ones(narms)
+                  f"Working on number of arms = {narms} and mu_max = {mu_max} ")
+            mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)
             coverage_arr[i, j] = find_coverage(model_name, ntrials, nsamples, narms, mu, cov)
     coverage_arr = np.round(coverage_arr, 2)
 
     # plot coverage rate
     fig, ax = plt.subplots(1, 1, figsize=(8, 4))
-    ax.plot(coverage_arr[:, 0], "o-", label="narms=2")
-    ax.plot(coverage_arr[:, 1], "v-", label="narms=10")
-    ax.plot(coverage_arr[:, 2], "*-", label="narms=50")
-    ax.set_xticks(np.arange(len(diff_li)))
-    ax.set_xticklabels([val if idx % 2 == 0 else "" for idx, val in enumerate(diff_li)])
-    ax.set_xlabel("Difference")
-    ax.set_ylabel("coverage probability")
+    ax.plot(coverage_arr[0, :], "o-", label="narms=2")
+    ax.plot(coverage_arr[1, :], "v-", label="narms=10")
+    ax.plot(coverage_arr[2, :], "*-", label="narms=50")
+    ax.set_xticks(np.arange(len(mu_max_li)))
+    ax.set_xticklabels([val if idx % 2 == 0 else "" for idx, val in enumerate(mu_max_li)])
+    ax.set_xlabel("Mean of best arm")
+    ax.set_ylabel("Coverage probability")
     ax.set_title(f"Coverage probability of Conventional 95% CIs ({model_name})")
     ax.legend(loc="lower right")
 

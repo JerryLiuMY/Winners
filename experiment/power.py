@@ -8,7 +8,7 @@ import numpy as np
 sns.set()
 
 
-def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
+def find_power(model_name, ntrials, nsamples, narms, mu, cov):
     """ RUn experiment
     :param model_name: Model name
     :param ntrials: Number of trials
@@ -16,7 +16,6 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
     :param narms: number of treatment
     :param mu: mean of the data generation
     :param cov: covariance of the data generation
-    :param null_li: List of null hypothesis
     :return: power
     """
 
@@ -24,21 +23,15 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li):
     model_dict = {"Naive": Naive, "Winners": Winners}
     Model = model_dict[model_name]
 
-    # find coverage rate
-    power_li = []
-    for idx, null in enumerate(null_li):
-        if idx % 5 == 0:
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on null hypothesis {idx}")
+    # find power
+    power_li_sub = []
+    for _ in range(ntrials):
+        Y, sigma = DGP(nsamples, narms, mu, cov).get_input()
+        model = Model(Y, sigma)
+        power_li_sub.append(1 - model.get_test(null=0))
+    power = np.mean(power_li_sub)
 
-        # find power
-        power_li_sub = []
-        for _ in range(ntrials):
-            Y, sigma = DGP(nsamples, narms, mu, cov).get_input()
-            model = Model(Y, sigma)
-            power_li_sub.append(model.get_power(null=null))
-        power_li.append(np.mean(power_li_sub))
-
-    return power_li
+    return power
 
 
 def plot_power(model_name, ntrials):
@@ -49,27 +42,30 @@ def plot_power(model_name, ntrials):
     """
 
     # define parameters
-    diff_li = [1, 2, 3, 4]
     narms_li = [2, 10, 50]
-    nsamples_li = [_ * 1 for _ in narms_li]
+    nsamples_li = [_ * 50 for _ in narms_li]
+    mu_max_li = list(np.arange(0, 4 + 0.1, 0.1))
+
+    # get power
+    power_arr = np.empty(shape=(len(narms_li), len(mu_max_li)))
+    for i, (nsamples, narms) in enumerate(zip(nsamples_li, narms_li)):
+        for j, mu_max in enumerate(mu_max_li):
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                  f"Working on number of arms = {narms} and mu_max = {round(mu_max, 2)} ")
+            mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)
+            power_arr[i, j] = find_power(model_name, ntrials, nsamples, narms, mu, cov)
+    power_arr = np.round(power_arr, 2)
 
     # plot power
-    fig, axes = plt.subplots(2, 2, figsize=(12, 12))
-    for i, diff in enumerate(diff_li):
-        ax = axes[i // 2, i % 2]
-        null_li = np.linspace(diff - 5, diff + 5, 101)
-        for j, (nsamples, narms) in enumerate(zip(nsamples_li, narms_li)):
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-                  f"Working on difference = {diff} and number of arms = {narms}")
-            mu, cov = np.array([diff] + [0] * (narms-1)), np.ones(narms)
-            power_li = find_power(model_name, ntrials, nsamples, narms, mu, cov, null_li)
-            ax.plot(power_li, "-", label=f"narms={narms}")
-
-        ax.set_xticks([val for idx, val in enumerate(np.arange(len(null_li))) if idx % 10 == 0])
-        ax.set_xticklabels([round((val - diff)) for idx, val in enumerate(null_li) if idx % 10 == 0])
-        ax.set_xlabel("null - true")
-        ax.set_ylabel("Power")
-        ax.set_title(f"Power of the method for difference = {diff}")
-        ax.legend(loc="lower right")
+    fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+    ax.plot(power_arr[0, :], "o-", label="narms=2")
+    ax.plot(power_arr[1, :], "v-", label="narms=10")
+    ax.plot(power_arr[2, :], "*-", label="narms=50")
+    ax.set_xticks([idx for idx, val in enumerate(mu_max_li) if idx % 5 == 0])
+    ax.set_xticklabels([val for idx, val in enumerate(mu_max_li) if idx % 5 == 0])
+    ax.set_xlabel("Mean of best arm")
+    ax.set_ylabel("Power")
+    ax.set_title(f"Power of the method with null = 0 ({model_name})")
+    ax.legend(loc="lower right")
 
     return fig
