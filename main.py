@@ -23,7 +23,7 @@ def run_coverage(model_name, ntrials):
         os.mkdir(coverage_path)
 
     # save figure
-    fig = plot_coverage(model_name, ntrials, nsamples_li, narms_li, mu_max_li)
+    fig = plot_coverage(model_name, ntrials, narms_li, nsamples_li, mu_max_li)
     fig.savefig(os.path.join(coverage_path, f"{model_name.lower()}_coverage.pdf"), bbox_inches="tight")
 
 
@@ -43,7 +43,7 @@ def run_power(model_name, ntrials):
         os.mkdir(power_path)
 
     # save figure
-    fig = plot_power(model_name, ntrials, nsamples_li, narms_li, mu_max_li)
+    fig = plot_power(model_name, ntrials, narms_li, nsamples_li, mu_max_li)
     fig.savefig(os.path.join(power_path, f"{model_name.lower()}_power.pdf"), bbox_inches="tight")
 
 
@@ -54,7 +54,7 @@ def run_simulation(ntrials):
     """
 
     # define parameters
-    nsamples, narms = 5000, 5
+    narms, nsamples = 5, 5000
     mu = (np.arange(narms) - 3) / 10
     cov = np.ones(narms)
     ntests_li = [1, 2, 3, 4, 5, 10, 20]
@@ -75,12 +75,12 @@ def run_simulation(ntrials):
             pickle.dump(params_dict, handle, protocol=4)
 
         # save results
-        rprobs = simulation(ntrials, nsamples, narms, mu, cov, ntests, ntrans)
-        rprob_naive, rprob_winners, rprob_rd = rprobs
-        rprobs_dict = {"rprob_naive": rprob_naive, "rprob_winners": rprob_winners, "rprob_rd": rprob_rd}
-        with open(os.path.join(ntests_path, "rprobs.pkl"), "wb") as handle:
-            pickle.dump(rprobs_dict, handle, protocol=4)
+        powers = simulation(ntrials, narms, nsamples, mu, cov, ntests, ntrans)
+        power_naive, power_winners, power_rd = powers
+        powers_dict = {"power_naive": power_naive, "power_winners": power_winners, "power_rd": power_rd}
+        with open(os.path.join(ntests_path, "powers.pkl"), "wb") as handle:
+            pickle.dump(powers_dict, handle, protocol=4)
 
 
 if __name__ == "__main__":
-    run_simulation(ntrials=1000)
+    run_power("Winners", ntrials=1000)

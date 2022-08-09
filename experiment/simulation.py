@@ -8,7 +8,7 @@ import numpy as np
 import multiprocessing
 
 
-def simulation(ntrials, nsamples, narms, mu, cov, ntests, ntrans):
+def simulation(ntrials, narms, nsamples, mu, cov, ntests, ntrans):
     """ RUn simulation for calculating power
     :param ntrials: Number of trails
     :param nsamples: number of samples
@@ -27,17 +27,17 @@ def simulation(ntrials, nsamples, narms, mu, cov, ntests, ntrans):
 
     # calculate pvalues
     parallel = Parallel(n_jobs=num_cores)
-    pvals = parallel(delayed(process)(nsamples, narms, mu, cov, ntests, ntrans) for _ in range(ntrials))
+    pvals = parallel(delayed(process)(narms, nsamples, mu, cov, ntests, ntrans) for _ in range(ntrials))
     pvals = np.array(pvals)
-    rprob_naive = np.mean(pvals[:, 0] <= 0.05)
-    rprob_winners = np.mean(pvals[:, 1] <= 0.05)
-    rprob_rd = np.mean(pvals[:, 2] <= 0.05)
-    rprobs = [rprob_naive, rprob_winners, rprob_rd]
+    power_naive = np.mean(pvals[:, 0] <= 0.05)
+    power_winners = np.mean(pvals[:, 1] <= 0.05)
+    power_rd = np.mean(pvals[:, 2] <= 0.05)
+    powers = [power_naive, power_winners, power_rd]
 
-    return rprobs
+    return powers
 
 
-def process(nsamples, narms, mu, cov, ntests, ntrans):
+def process(narms, nsamples, mu, cov, ntests, ntrans):
     """ Single process for experiment
     :param nsamples: number of samples
     :param narms: number of treatment
@@ -49,7 +49,7 @@ def process(nsamples, narms, mu, cov, ntests, ntrans):
     """
 
     # generate data
-    dgp = DGP(nsamples, narms=narms, mu=mu, cov=cov)
+    dgp = DGP(narms=narms, nsamples=nsamples, mu=mu, cov=cov)
     Y, Z = dgp.get_data()
     Y_mu, sigma = dgp.get_input()
 

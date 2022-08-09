@@ -3,7 +3,7 @@ import numpy as np
 
 class DGP(object):
 
-    def __init__(self, nsamples, narms, mu, cov):
+    def __init__(self, narms, nsamples, mu, cov):
         self.n = nsamples
         self.k = narms
         self.mu = mu
