@@ -1,9 +1,10 @@
-import numpy as np
 from joblib import Parallel, delayed
 from data_prep.dgp import DGP
 from models.naive import Naive
 from models.rd import RD
 from models.winners import Winners
+from datetime import datetime
+import numpy as np
 import multiprocessing
 
 
@@ -19,14 +20,14 @@ def simulation(ntrials, nsamples, narms, mu, cov, ntests, ntrans):
     :return: array of pvalues
     """
 
-    narms = 5
-    mu = np.arange(5) - 4
-    cov = np.ones(5)
+    # logging message
     num_cores = multiprocessing.cpu_count()
-    print("num_cores={}".format(num_cores))
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on ntests={ntests} and ntrans={ntrans} "
+          f"[num_cores={num_cores}]")
 
+    # calculate pvalues
     parallel = Parallel(n_jobs=num_cores)
-    pvals = parallel(delayed(process)(trial, nsamples, narms, mu, cov, ntests, ntrans) for trial in range(ntrials))
+    pvals = parallel(delayed(process)(nsamples, narms, mu, cov, ntests, ntrans) for _ in range(ntrials))
     pvals = np.array(pvals)
     rprob_naive = np.mean(pvals[:, 0] <= 0.05)
     rprob_winners = np.mean(pvals[:, 1] <= 0.05)
@@ -47,6 +48,7 @@ def process(nsamples, narms, mu, cov, ntests, ntrans):
     :return:
     """
 
+    # generate data
     dgp = DGP(nsamples, narms=narms, mu=mu, cov=cov)
     Y, Z = dgp.get_data()
     Y_mu, sigma = dgp.get_input()
