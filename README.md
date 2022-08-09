@@ -15,6 +15,8 @@ The coverage probability with `ntreat=2, 10, 50` and difference between the winn
 
 
 ## Power
+<a href="./__results__/simulation" target="_blank">Comparision</a> of power between different methods with `nsamples=5000`, `narms=5`, `mu = (np.arange(narms) - 3) / 10`, `cov = np.ones(narms)` for `ntests_li = [1, 2, 3, 4, 5, 10, 20]` and `ntrans = 500`.
+
 ### Naive method
 ![alt text](./__resources__/naive_power.jpg?raw=true "Title")
 
