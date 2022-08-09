@@ -59,11 +59,12 @@ def run_simulation(ntrials):
     cov = np.ones(narms)
     ntests_li = [30, 50, 100]  # [1, 2, 3, 4, 5, 10, 20, 30, 50, 100]
     ntrans = 500
+    simulation_path = os.path.join(results_path, "simulation")
 
     # perform test
     for ntests in ntests_li:
         # define paths
-        ntests_path = os.path.join(results_path, f"ntests_{ntests}_ntrans_{ntrans}")
+        ntests_path = os.path.join(simulation_path, f"ntests_{ntests}_ntrans_{ntrans}")
         if not os.path.isdir(ntests_path):
             os.mkdir(ntests_path)
 
