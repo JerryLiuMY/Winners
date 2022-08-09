@@ -2,13 +2,14 @@ from matplotlib import pyplot as plt
 from data_prep.dgp import DGP
 from models.winners import Winners
 from models.naive import Naive
+from models.rd import RD
 from datetime import datetime
 import seaborn as sns
 import numpy as np
 sns.set()
 
 
-def find_power(model_name, ntrials, nsamples, narms, mu, cov):
+def find_power(model_name, ntrials, narms, nsamples, mu, cov, **kwargs):
     """ Run experiment
     :param model_name: model name
     :param ntrials: number of trials
@@ -20,21 +21,29 @@ def find_power(model_name, ntrials, nsamples, narms, mu, cov):
     """
 
     # define parameters
-    model_dict = {"Naive": Naive, "Winners": Winners}
+    model_dict = {"Naive": Naive, "Winners": Winners, "RD": RD}
     Model = model_dict[model_name]
 
     # find power
-    power_li_sub = []
+    pvals = []
     for _ in range(ntrials):
-        Y, sigma = DGP(nsamples, narms, mu, cov).get_input()
-        model = Model(Y, sigma)
-        power_li_sub.append(1 - model.get_test(null=0))
-    power = np.mean(power_li_sub)
+        Y, T = DGP(narms, nsamples, mu, cov).get_data()
+        Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
+        if model_name == "RD":
+            ntests, ntrans = kwargs["ntests"], kwargs["ntrans"]
+            model = Model(Y, T, b=int(len(T) / 2), null=0)
+            pval = model.multiple_test(ntests, ntrans)
+        else:
+            model = Model(Y_mu, sigma)
+            pval = model.get_test(null=0)
+        pvals.append(pval)
+
+    power = np.mean(np.array(pvals) <= 0.05)
 
     return power
 
 
-def plot_power(model_name, ntrials, nsamples_li, narms_li, mu_max_li):
+def plot_power(model_name, ntrials, narms_li, nsamples_li, mu_max_li):
     """ Plot the calculated power
     :param model_name: model name
     :param ntrials: number of trials
@@ -51,7 +60,7 @@ def plot_power(model_name, ntrials, nsamples_li, narms_li, mu_max_li):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
                   f"Working on number of arms = {narms} and mu_max = {round(mu_max, 2)} ")
             mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)
-            power_arr[i, j] = find_power(model_name, ntrials, nsamples, narms, mu, cov)
+            power_arr[i, j] = find_power(model_name, ntrials, narms, nsamples, mu, cov)
     power_arr = np.round(power_arr, 2)
 
     # plot power

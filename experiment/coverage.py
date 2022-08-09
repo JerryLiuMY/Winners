@@ -31,8 +31,8 @@ def find_coverage(model_name, ntrials, nsamples, narms, mu, cov):
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on trial {idx}")
 
         # search for mu
-        Y, sigma = DGP(nsamples, narms, mu, cov).get_input()
-        model = Model(Y, sigma)
+        Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
+        model = Model(Y_mu, sigma)
         mu_lower = model.search_mu(alpha=0.025, tol=tol)
         mu_upper = model.search_mu(alpha=1-0.025, tol=tol)
 
@@ -42,7 +42,7 @@ def find_coverage(model_name, ntrials, nsamples, narms, mu, cov):
     return np.mean(coverage_li)
 
 
-def plot_coverage(model_name, ntrials, nsamples_li, narms_li, mu_max_li):
+def plot_coverage(model_name, ntrials, narms_li, nsamples_li, mu_max_li):
     """ Plot the calculated coverage rate
     :param model_name: Model name
     :param ntrials: Number of trials
