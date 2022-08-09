@@ -42,17 +42,15 @@ def find_coverage(model_name, ntrials, nsamples, narms, mu, cov):
     return np.mean(coverage_li)
 
 
-def plot_coverage(model_name, ntrials):
+def plot_coverage(model_name, ntrials, nsamples_li, narms_li, mu_max_li):
     """ Plot the calculated coverage rate
     :param model_name: Model name
     :param ntrials: Number of trials
+    :param nsamples_li: number of samples list
+    :param narms_li: number of treatment list
+    :param mu_max_li: mean of the best arm list
     :return:
     """
-
-    # define parameters
-    narms_li = [2, 10, 50]
-    nsamples_li = [_ * 50 for _ in narms_li]
-    mu_max_li = list(np.arange(0, 8 + 0.5, 0.5))
 
     # get coverage rate
     coverage_arr = np.empty(shape=(len(narms_li), len(mu_max_li)))
