@@ -27,7 +27,7 @@ def simulation(ntrials, narms, nsamples, mu, cov, ntests, ntrans):
 
     # calculate pvalues
     parallel = Parallel(n_jobs=num_cores)
-    pvals = parallel(delayed(process)(nsamples, narms, mu, cov, ntests, ntrans) for _ in range(ntrials))
+    pvals = parallel(delayed(process)(narms, nsamples, mu, cov, ntests, ntrans) for _ in range(ntrials))
     pvals = np.array(pvals)
     power_naive = np.mean(pvals[:, 0] <= 0.05)
     power_winners = np.mean(pvals[:, 1] <= 0.05)

@@ -26,10 +26,11 @@ def find_power(model_name, ntrials, narms, nsamples, mu, cov, **kwargs):
 
     # find power
     pvals_method = []
-    for _ in range(ntrials):
+    for trail in range(ntrials):
         Y, T = DGP(narms, nsamples, mu, cov).get_data()
         Y_mu, sigma = DGP(narms, nsamples, mu, cov).get_input()
         if model_name == "RD":
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Working on trail = {trail}")
             ntests, ntrans = kwargs["ntests"], kwargs["ntrans"]
             model = Model(Y, T, b=int(len(T) / 2), null=0)
             pval = model.multiple_test(ntests, ntrans)
