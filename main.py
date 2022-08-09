@@ -80,3 +80,7 @@ def run_simulation(ntrials):
         rprobs_dict = {"rprob_naive": rprob_naive, "rprob_winners": rprob_winners, "rprob_rd": rprob_rd}
         with open(os.path.join(ntests_path, "rprobs.pkl"), "wb") as handle:
             pickle.dump(rprobs_dict, handle, protocol=4)
+
+
+if __name__ == "__main__":
+    run_simulation(ntrials=1000)
