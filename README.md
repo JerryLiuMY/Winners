@@ -29,7 +29,7 @@ For the RD method `ntests = 5` and `ntrans = 500`.
 ![alt text](./__resources__/rd_power.jpg)
 
 ### Comparison
-<a href="./__results__/simulation" target="_blank">Comparision</a> of power between different methods with `ntrials=1000`, `narms=5`, `nsamples=5000`, `mu = (np.arange(5) - 3) / 10`, `cov = np.ones(5)`. For the RD method `ntests_li = [1, 2, 3, 4, 5, 10, 20, 30, 50, 100]` and `ntrans = 500`.
+<a href="./__results__/simulation" target="_blank">Comparison</a> of power between different methods with `ntrials=1000`, `narms=5`, `nsamples=5000`, `mu = (np.arange(5) - 3) / 10`, `cov = np.ones(5)`. For the RD method `ntests_li = [1, 2, 3, 4, 5, 10, 20, 30, 50, 100]` and `ntrans = 500`.
 
 |             | ntests=1, ntrans=500 | ntests=2, ntrans=500 | ntests=3, ntrans=500 | ntests=4, ntrans=500 | ntests=5, ntrans=500 | ntests=10, ntrans=500 | ntests=20, ntrans=500 | ntests=30, ntrans=500 | ntests=50, ntrans=500 | ntests=100, ntrans=500 |
 |-------------|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:--------------------:|:---------------------:|:---------------------:|:---------------------:|:---------------------:|:----------------------:|
