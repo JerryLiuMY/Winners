@@ -6,7 +6,7 @@
 
 
 ## Coverage Probability
-The coverage probability of the methods with `ntrials=1000`, `narms=2, 10, 50` and `50` samples per arm. The difference between the winning arm and the remaining arms ranging from `0` to `8`. The mean and covariance being `mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)`.
+The coverage probability of the methods with `ntrials=1000`, `narms=2, 10, 50` and `50` samples per arm. The mean `mu_max` of the winning arm ranging from `0` to `8`. The mean and covariance being `mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)`.
 
 ### Naive method
 ![alt text](./__resources__/naive_coverage.jpg)
@@ -16,7 +16,7 @@ The coverage probability of the methods with `ntrials=1000`, `narms=2, 10, 50` a
 
 
 ## Power
-The power of the methods with `ntrials=1000`, `narms=2, 10, 50` and `50` samples per arm. The difference between the winning arm and the remaining arms ranging from `0` to `4`. The mean and covariance being `mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)` with `null=0`. 
+The power of the methods with `ntrials=1000`, `narms=2, 10, 50` and `50` samples per arm. The mean `mu_max` of the winning arm ranging from `0` to `4`. The mean and covariance being `mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)` with `null=0`. 
 
 ### Naive method
 ![alt text](./__resources__/naive_power.jpg)
