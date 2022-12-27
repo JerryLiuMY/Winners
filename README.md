@@ -4,6 +4,14 @@
     <img src="https://img.shields.io/badge/python-v3-brightgreen.svg" alt="python"></a> &nbsp;
 </p>
 
+The repository provides a comparison of three methods for inference on the confidence intervals and median of selected target parameters under the winner's curse: 
+- A Naive method 
+- The Winner's method [[Andrews et al. (2021)]](https://scholar.harvard.edu/iandrews/publications/inference-winners)
+- A Permutation test based method
+
+In particular, we provide a Python implementation of the paper [Inference on Winners](https://scholar.harvard.edu/iandrews/publications/inference-winners) authored by Andrews et al. (2021) following the original [R implementation](https://scholar.harvard.edu/files/iandrews/files/inference_on_winner_r_june2021.zip).
+
+**Winner's Curse:** Researchers may be interested in the effectiveness of the best policy found in a randomized trial, or the best-performing investment strategy based on historical data. Such settings give rise to a winner's curse, where conventional estimates are biased and conventional confidence intervals are unreliable.
 
 ## Coverage Probability
 The coverage probability of the methods with `ntrials=1000`, `narms=2, 10, 50` and `50` samples per arm. The mean `mu_max` of the winning arm ranging from `0` to `8`. The mean and covariance being `mu, cov = np.array([mu_max] + [0] * (narms-1)), np.ones(narms)`.
