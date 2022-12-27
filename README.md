@@ -9,7 +9,7 @@ The repository provides a comparison of three methods for inference on the confi
 - The Winner's method [[Andrews et al. (2021)]](https://scholar.harvard.edu/iandrews/publications/inference-winners)
 - A Permutation test based method
 
-In particular, we provide a Python implementation of the paper [Inference on Winners](https://scholar.harvard.edu/iandrews/publications/inference-winners) authored by Andrews et al. (2021) following the original [R implementation](https://scholar.harvard.edu/files/iandrews/files/inference_on_winner_r_june2021.zip).
+In particular, we provide a [Python implementation](models/winners.py) of the paper [Inference on Winners](https://scholar.harvard.edu/iandrews/publications/inference-winners) authored by Andrews et al. (2021) following the original [R implementation](https://scholar.harvard.edu/files/iandrews/files/inference_on_winner_r_june2021.zip).
 
 **Winner's Curse:** Researchers may be interested in the effectiveness of the best policy found in a randomized trial, or the best-performing investment strategy based on historical data. Such settings give rise to a winner's curse, where conventional estimates are biased and conventional confidence intervals are unreliable.
 
